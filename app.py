@@ -343,7 +343,7 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1")
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q2"],
        bottom=df_funds_display["TVPI Q1"], label="Q2")
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI_ 2"], label="Q3")
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI 2"], label="Q3")
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
        bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
@@ -353,6 +353,7 @@ ax.set_ylabel("Score")
 ax.legend()
 
 st.pyplot(fig)
+
 
 
 
