@@ -122,6 +122,9 @@ else:
 
 df_filtered = df_filtered[df_filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
+# Reemplazar GPScore vacío con 0
+df["GPScore"] = pd.to_numeric(df["GPScore"], errors="coerce").fillna(0)
+
 # --------------------------------------------------------
 # RANKING
 # --------------------------------------------------------
@@ -212,6 +215,7 @@ df_rank_display = df_rank[[
 df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
 
 st.dataframe(df_rank_display, use_container_width=True)
+
 
 
 
