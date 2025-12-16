@@ -157,7 +157,7 @@ for gp in df_rank["FUND MANAGER"]:
         <td>{strategy}</td>
         <td>{region}</td>
         <td>{num_funds}</td>
-        <td>{int(last_vintage)}</td>
+        <td>{"" if pd.isna(last_vintage) else int(float(last_vintage))}</td>
         <td>{last_fund_size:,.0f}</td>
         <td>{total_aum:,.0f}</td>
         <td>{gp_total_aum:,.0f}</td>
@@ -191,6 +191,7 @@ html_table = f"""
 
 # Mostrar tabla final
 st.markdown(html_table, unsafe_allow_html=True)
+
 
 
 
