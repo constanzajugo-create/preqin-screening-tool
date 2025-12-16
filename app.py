@@ -32,8 +32,9 @@ if selected_asset != "Todos":
 if selected_gp != "Todos":
     filtered = filtered[filtered["FUND MANAGER"] == selected_gp]
 
-filtered = filtered[filtered["FUND SIZE (USDm)"] >= min_fund_size]
+filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
 # --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
 st.dataframe(filtered)
+
