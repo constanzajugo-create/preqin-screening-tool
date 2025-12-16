@@ -215,6 +215,11 @@ st.subheader("Todos los GPs del Asset Class (ordenados por Score)")
 
 df_rank_display = df_gp_rank.copy()
 df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
+
+#Eliminar GPScore
+
+df_rank_display= df_rank_display.drop(columns=["GPScore"])
+
 st.dataframe(df_rank_display.round(2), use_container_width=True)
 
 # --------------------------------------------------------
@@ -326,6 +331,7 @@ axs[1, 1].legend()
 # --------------------------------------------------------
 plt.tight_layout()
 st.pyplot(fig)
+
 
 
 
