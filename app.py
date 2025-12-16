@@ -112,8 +112,16 @@ df_filtered = df_filtered[df_filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 df_rank = df_filtered.groupby("FUND MANAGER", as_index=False).agg({
     "GPScore": "mean"
 })
+# Asegurar que GPScore no tenga NaN
+df_rank["GPScore"] = pd.to_numeric(df_rank["GPScore"], errors="coerce").fillna(0)
 
-df_rank["Rank"] = df_rank["GPScore"].rank(ascending=False, method="dense").astype(int)
+# Ranking corregido
+df_rank["Rank"] = (
+    df_rank["GPScore"]
+    .rank(ascending=False, method="dense")
+    .astype(int)
+)
+
 df_rank = df_rank.sort_values("Rank")
 
 total_gps = len(df_rank)
@@ -183,4 +191,5 @@ html_table = f"""
 
 # Mostrar tabla final
 st.markdown(html_table, unsafe_allow_html=True)
+
 
