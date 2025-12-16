@@ -1,27 +1,24 @@
 import streamlit as st
 import pandas as pd
 
-# ----------------------------
-# ESTILO GLOBAL PARA TÍTULOS
-# ----------------------------
+# ==========================
+#  ESTILOS CSS (TODO DENTRO DEL MISMO BLOQUE)
+# ==========================
 st.markdown("""
 <style>
-/* Aumentar el ancho máximo del cuerpo central */
+
 .main .block-container {
     max-width: 1500px;
     padding-left: 2rem;
     padding-right: 2rem;
 }
-</style>
-""", unsafe_allow_html=True)
-
 
 /* Estilo tabla */
 table {
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
-    width: 90%;
+    width: 95%;
 }
 
 th, td {
@@ -29,6 +26,7 @@ th, td {
     padding: 10px;
     text-align: center;
     font-size: 15px;
+    white-space: nowrap;
 }
 
 th {
@@ -43,12 +41,16 @@ tbody tr:nth-child(even) {
 </style>
 """, unsafe_allow_html=True)
 
+
+# ==========================
+# TÍTULO
+# ==========================
 st.title("Screening Tool")
 
 
-# ----------------------------
-# Cargar CSV
-# ----------------------------
+# ==========================
+# CARGA CSV
+# ==========================
 @st.cache_data
 def load_data():
     return pd.read_csv("DB_FINAL_WITH_SCORES.csv")
@@ -56,12 +58,11 @@ def load_data():
 df = load_data()
 
 
-# ----------------------------
-# Normalizar Asset Class
-# ----------------------------
+# ==========================
+# NORMALIZAR ASSET CLASS
+# ==========================
 def normalize_asset(x):
     x = str(x).strip().lower()
-
     if "debt" in x: return "Private Debt"
     if "equity" in x: return "Private Equity"
     if "infra" in x: return "Infrastructure"
@@ -71,9 +72,9 @@ def normalize_asset(x):
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
 
-# ----------------------------
+# ==========================
 # SIDEBAR – FILTROS
-# ----------------------------
+# ==========================
 st.sidebar.header("Filtros")
 
 expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 1, 20, 1)
@@ -83,7 +84,6 @@ current_year = st.sidebar.number_input("Año Actual", 1990, 2030, 2025)
 asset_classes = ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 selected_asset = st.sidebar.selectbox("Asset Class", asset_classes)
 
-# GP dinámicos
 if selected_asset == "Todos":
     gps_filtered = sorted(df["FUND MANAGER"].dropna().unique())
 else:
@@ -92,9 +92,9 @@ else:
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_filtered)
 
 
-# ----------------------------
+# ==========================
 # FILTRADO FINAL
-# ----------------------------
+# ==========================
 filtered = df.copy()
 
 if selected_asset != "Todos":
@@ -106,9 +106,9 @@ if selected_gp != "Todos":
 filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
 
-# ----------------------------
+# ==========================
 # RESULTADOS
-# ----------------------------
+# ==========================
 st.subheader("Resultados del GP Seleccionado")
 
 if selected_gp != "Todos":
@@ -116,7 +116,6 @@ if selected_gp != "Todos":
 
     if len(gp_df) > 0:
 
-        # Cálculos
         num_funds = len(gp_df)
         last_vintage = gp_df["VINTAGE / INCEPTION YEAR"].max()
         last_fund_size = gp_df.loc[gp_df["VINTAGE / INCEPTION YEAR"].idxmax(), "FUND SIZE (USD MN)"]
@@ -130,12 +129,12 @@ if selected_gp != "Todos":
         gp_score_raw = gp_df["GPScore"].iloc[0]
         gp_score = f"{gp_score_raw * 100:.2f}%"
 
-        # -------------------------
-        # TABLA HTML CORREGIDA
-        # -------------------------
+        # ==========================
+        # HTML TABLE
+        # ==========================
         html_table = f"""
         <div style="overflow-x: auto; width: 100%;">
-        <table style="width: 100%; table-layout: fixed;">
+        <table>
             <thead>
                 <tr>
                     <th>GP (Fund Manager)</th>
@@ -168,11 +167,11 @@ if selected_gp != "Todos":
         </div>
         """
 
-
         st.markdown(html_table, unsafe_allow_html=True)
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
