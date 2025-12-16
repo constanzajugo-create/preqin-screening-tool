@@ -6,7 +6,14 @@ import pandas as pd
 # ----------------------------
 st.markdown("""
 <style>
-h1, h2, h3 { text-align: center; }
+/* Aumentar el ancho máximo del cuerpo central */
+.main .block-container {
+    max-width: 1500px; /* Puedes subirlo hasta 1800 si quieres */
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+</style>
+""", unsafe_allow_html=True)
 
 /* Estilo tabla */
 table {
@@ -165,6 +172,7 @@ if selected_gp != "Todos":
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
