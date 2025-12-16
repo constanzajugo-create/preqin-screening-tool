@@ -46,7 +46,7 @@ else:
 
 gps_filtered = sorted(gps_filtered)
 
-selected_gp = st.sidebar.selectbox("Seleccionar GP", ["Todos"] + gps_filtered)
+selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_filtered)
 
 
 # --- Aplicar filtros ---
@@ -63,6 +63,7 @@ filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 # --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
 st.dataframe(filtered)
+
 
 
 
