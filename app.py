@@ -113,6 +113,8 @@ selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_list)
 
 # Screening (afecta score y ranking)
 
+df_screening = df_asset.copy()
+
 # Fondos completos (histórico)
 df_funds_all = df_asset.copy()
 
