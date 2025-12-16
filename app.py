@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-st.title("Preqin Screening Tool – Panel")
+st.title("Screening Tool")
 
 # --- Cargar CSV ---
 @st.cache_data
@@ -63,6 +63,7 @@ filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 # --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
 st.dataframe(filtered)
+
 
 
 
