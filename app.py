@@ -239,7 +239,6 @@ df_funds_display = df_funds[available_cols].copy()
 df_funds_display = df_funds_display.rename(columns={
     "NAME":"Fund Name",
     "NET MULTIPLE (X)":"TVPI",
-    "IRR": "IRR (%)",
     "DPI (%)":"DPI",
     "FundScore":"Fund Score",
     "TVPI_p95":"TVPI Q4","TVPI_p75":"TVPI Q3","TVPI_p50":"TVPI Q2","TVPI_p25":"TVPI Q1",
@@ -251,6 +250,7 @@ if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
 
 st.dataframe(df_funds_display.round(2), use_container_width=True, hide_index=True)
+
 
 
 
