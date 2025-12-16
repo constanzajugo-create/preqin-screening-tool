@@ -259,7 +259,7 @@ import matplotlib.pyplot as plt
 # --------------------------------------------------------
 
 # Creamos la figura general con 4 subgráficos (2x2)
-fig, axs = plt.subplots(2, 2, figsize=(20, 10))
+fig, axs = plt.subplots(2, 2, figsize=(30, 16))
 
 # Cargar los datos de cuartiles para cada métrica
 df_funds_display["TVPI_Q1"] = df_funds_display["TVPI Q1"]
@@ -326,6 +326,7 @@ axs[1, 1].legend()
 # --------------------------------------------------------
 plt.tight_layout()
 st.pyplot(fig)
+
 
 
 
