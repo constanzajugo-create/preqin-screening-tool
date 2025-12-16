@@ -34,11 +34,20 @@ expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 1, 20, 1)
 min_fund_size = st.sidebar.number_input("Minimum Fund Size (USDm)", 0, 5000, 2)
 current_year = st.sidebar.number_input("Año Actual", 1990, 2030, 2025)
 
+# Lista fija de Asset Classes
 asset_classes = ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 selected_asset = st.sidebar.selectbox("Asset Class", asset_classes)
 
-gps = sorted(df["FUND MANAGER"].dropna().unique())
-selected_gp = st.sidebar.selectbox("Seleccionar GP", ["Todos"] + gps)
+# --- GP dinámico según Asset Class ---
+if selected_asset == "Todos":
+    gps_filtered = df["FUND MANAGER"].dropna().unique()
+else:
+    gps_filtered = df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].dropna().unique()
+
+gps_filtered = sorted(gps_filtered)
+
+selected_gp = st.sidebar.selectbox("Seleccionar GP", ["Todos"] + gps_filtered)
+
 
 # --- Aplicar filtros ---
 filtered = df.copy()
@@ -54,6 +63,7 @@ filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 # --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
 st.dataframe(filtered)
+
 
 
 
