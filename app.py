@@ -128,7 +128,6 @@ if selected_gp != "Todos":
         html_table = f"""
         <div style="overflow-x: auto; width: 100%;">
         <table style="width: 100%; table-layout: fixed;">
-
             <thead>
                 <tr>
                     <th>GP (Fund Manager)</th>
@@ -161,9 +160,11 @@ if selected_gp != "Todos":
         </div>
         """
 
+
         st.markdown(html_table, unsafe_allow_html=True)
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
