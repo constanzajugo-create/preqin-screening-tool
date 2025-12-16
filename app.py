@@ -3,40 +3,42 @@ import pandas as pd
 
 st.markdown("""
 <style>
-/* Centrar tabla en la página */
-div[data-testid="stDataFrame"] {
-    width: 95% !important;
-    margin-left: auto;
-    margin-right: auto;
+
+/* Fuerza a que el dataframe ocupe todo el ancho disponible */
+div[data-testid="stDataFrame"] > div {
+    width: 100% !important;
 }
 
-/* Ajustar fuente */
+/* Fuerza scroll horizontal si es necesario */
+div[data-testid="stHorizontalBlock"] {
+    overflow-x: auto !important;
+}
+
+/* Aumenta el ancho mínimo de cada columna */
+.dataframe th, .dataframe td {
+    min-width: 150px !important;
+    white-space: nowrap !important;
+}
+
+/* Centrar tabla */
+div[data-testid="stDataFrame"] {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Header estilizado */
 .dataframe thead th {
     font-size: 15px !important;
     font-weight: 600 !important;
     text-align: center !important;
 }
 
+/* Celdas */
 .dataframe tbody td {
     font-size: 14px !important;
     text-align: center !important;
 }
 
-/* Bordes suaves */
-.dataframe {
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-}
-
-/* Hacer que el header NO se rompa */
-th {
-    white-space: nowrap !important;
-}
-
-/* Alternar filas */
-tbody tr:nth-child(even) {
-    background-color: #f7f7f7 !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -160,6 +162,7 @@ if selected_gp != "Todos":
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
