@@ -59,25 +59,27 @@ div[data-testid="stMarkdown"] > div > div {
 #  FUNCIONES
 # =====================================================
 
-def safe_year(x):
+def clean_year(x):
+    """
+    Devuelve un año válido (int) o NaN si no es usable.
+    """
     try:
-        # eliminar espacios y caracteres raros
         x = str(x).strip()
 
-        # si está vacío o es NaN → devolver vacío
-        if x == "" or x.lower() in ["nan", "none", "null", "n/a", "-", "--"]:
-            return ""
+        # Valores inválidos comunes
+        if x.lower() in ["nan", "none", "null", "n/a", "-", "--", "", " "]:
+            return np.nan
 
-        # Extraer sólo números
-        digits = "".join(ch for ch in x if ch.isdigit())
+        # Extraer solo dígitos
+        year_str = "".join(ch for ch in x if ch.isdigit())
 
-        if digits == "":
-            return ""
+        if len(year_str) != 4:
+            return np.nan
 
-        return int(digits)
+        return int(year_str)
 
     except:
-        return ""
+        return np.nan
 
 
 # =====================================================
@@ -88,6 +90,8 @@ def load_data():
     return pd.read_csv("DB_FINAL_WITH_SCORES.csv")
 
 df = load_data()
+
+df["VINTAGE / INCEPTION YEAR"] = df["VINTAGE / INCEPTION YEAR"].apply(clean_year)
 
 # Normalizar Asset Class
 def normalize_asset(x):
@@ -216,6 +220,7 @@ html_table = f"""
 
 # Mostrar tabla final
 st.markdown(html_table, unsafe_allow_html=True)
+
 
 
 
