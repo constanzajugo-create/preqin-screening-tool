@@ -3,6 +3,15 @@ import pandas as pd
 
 st.title("Screening Tool")
 
+st.markdown("""
+<style>
+table {
+    width: 100% !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # --- Cargar CSV ---
 @st.cache_data
 def load_data():
@@ -118,9 +127,12 @@ if selected_gp != "Todos":
             "width": "150px"
         }))
 
+        st.table(resumen_styled)
+
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
