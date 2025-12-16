@@ -1,45 +1,53 @@
 import streamlit as st
 import pandas as pd
-import numpy as np # Necesario si usas datos dummy para prueba
+import numpy as np
 
-# ----------------------------
-# ESTILO GLOBAL PARA TÍTULOS Y TABLA
-# ----------------------------
+# =====================================================
+#  ESTILO GENERAL Y ESTILO DE TABLAS
+# =====================================================
 st.markdown("""
 <style>
+
 h1, h2, h3 { text-align: center; }
 
-/* Estilo tabla: Ajustado para que las celdas sean más compactas */
+/* TABLA GENERAL */
 table {
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
-    width: 90%; /* Mantener el ancho controlado */
-    table-layout: fixed; /* Mantenemos fixed para que el ancho se distribuya equitativamente */
+    width: 98%;
+    table-layout: fixed;
 }
 
+/* CELDAS */
 th, td {
     border: 1px solid #ddd;
-    /* Reducimos el padding vertical y horizontal para compactar la tabla */
-    padding: 5px 3px; 
+    padding: 6px 4px;
     text-align: center;
-    font-size: 13px; /* Reducir ligeramente el tamaño de la fuente si es necesario */
-    vertical-align: top; /* Alinear el texto de las celdas en la parte superior */
-    word-wrap: break-word; /* Permite romper palabras largas si es necesario */
+    font-size: 13px;
+    vertical-align: middle;
+    word-wrap: break-word;
 }
 
+/* HEADERS */
 th {
-    background-color: #f0f0f0;
+    background-color: #e8e8e8;
     font-weight: 600;
-    font-size: 13px; /* Ajustar fuente del encabezado al mismo tamaño o ligeramente mayor */
-    line-height: 1.2; /* Reduce el espacio entre líneas en el encabezado */
+    line-height: 1.1;
 }
 
+/* FILAS ALTERNADAS */
 tbody tr:nth-child(even) {
-    background-color: #fafafa;
+    background-color: #f5f5f5;
 }
 
-/* Contenedor de la tabla: asegura que se muestre sin scroll */
+/* DESTACAR GP SELECCIONADO */
+.highlight-row {
+    background-color: #d4ed6d !important;
+    font-weight: 700 !important;
+}
+
+/* Quitar scroll externo */
 div[data-testid="stMarkdown"] > div > div {
     overflow-x: hidden !important;
 }
@@ -47,45 +55,18 @@ div[data-testid="stMarkdown"] > div > div {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("Screening Tool")
-
-
-# ----------------------------
-# Cargar CSV
-# ----------------------------
+# =====================================================
+#  CARGAR DATA
+# =====================================================
 @st.cache_data
 def load_data():
-    try:
-        # Intenta cargar el archivo real
-        df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
-    except FileNotFoundError:
-        # Datos Dummy para asegurar que el código funcione sin el CSV
-        # Asegúrate de que las columnas tengan los mismos nombres que en tu DB real
-        st.warning("Archivo 'DB_FINAL_WITH_SCORES.csv' no encontrado. Usando datos dummy para la demostración.")
-        df = pd.DataFrame({
-            "FUND MANAGER": ["1 SEED PARTNERS", "1 SEED PARTNERS", "2 VENTURE CAPITAL"],
-            "ASSET CLASS": ["Real Estate", "Real Estate", "Private Equity"],
-            "FUND SIZE (USD MN)": [100, 150, 50],
-            "VINTAGE / INCEPTION YEAR": [2010, 2018, 2020],
-            "STRATEGY": ["Real Estate Fund of Funds", "Real Estate Value Add", "Venture Capital Seed"],
-            "PRIMARY REGION FOCUS": ["North America", "North America", "Europe"],
-            "FUND MANAGER TOTAL AUM (USD MN)": [5000, 5000, 2000],
-            "GPScore": [0.4405, 0.4405, 0.75]
-        })
-        for col in ["FUND SIZE (USD MN)", "VINTAGE / INCEPTION YEAR", "FUND MANAGER TOTAL AUM (USD MN)", "GPScore"]:
-            if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
-    return df
+    return pd.read_csv("DB_FINAL_WITH_SCORES.csv")
 
 df = load_data()
 
-
-# ----------------------------
 # Normalizar Asset Class
-# ----------------------------
 def normalize_asset(x):
     x = str(x).strip().lower()
-
     if "debt" in x: return "Private Debt"
     if "equity" in x: return "Private Equity"
     if "infra" in x: return "Infrastructure"
@@ -94,120 +75,112 @@ def normalize_asset(x):
 
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
-
-# ----------------------------
-# SIDEBAR – FILTROS
-# ----------------------------
+# =====================================================
+#  SIDEBAR FILTROS
+# =====================================================
 st.sidebar.header("Filtros")
-
-expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 1, 20, 1)
-min_fund_size = st.sidebar.number_input("Minimum Fund Size (USDm)", 0, 5000, 2)
-current_year = st.sidebar.number_input("Año Actual", 1990, 2030, 2025)
 
 asset_classes = ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 selected_asset = st.sidebar.selectbox("Asset Class", asset_classes)
 
-# GP dinámicos
+expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 1, 20, 1)
+min_fund_size = st.sidebar.number_input("Minimum Fund Size (USDm)", 0, 50000, 2)
+current_year = st.sidebar.number_input("Año Actual", 1990, 2035, 2025)
+
+# Filtrar GPs según asset class
 if selected_asset == "Todos":
-    gps_filtered = sorted(df["FUND MANAGER"].dropna().unique().tolist())
+    gps_filtered = sorted(df["FUND MANAGER"].unique().tolist())
 else:
-    gps_filtered = sorted(df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].dropna().unique().tolist())
+    gps_filtered = sorted(df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].unique().tolist())
 
-# Manejo de la selección del GP 
-if len(gps_filtered) > 0:
-    try:
-        # Selecciona el GP del ejemplo por defecto
-        default_index = gps_filtered.index("1 SEED PARTNERS")
-    except ValueError:
-        default_index = 0
-        
-    selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_filtered, index=default_index)
+selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_filtered)
+
+# =====================================================
+#  FILTRADO FINAL: todos los GPs del asset class
+# =====================================================
+if selected_asset == "Todos":
+    df_filtered = df.copy()
 else:
-    st.sidebar.info("No hay GPs disponibles para la Asset Class seleccionada.")
-    selected_gp = None
+    df_filtered = df[df["ASSET CLASS"] == selected_asset].copy()
 
+# Solo considerar fondos con tamaño mínimo
+df_filtered = df_filtered[df_filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
-# ----------------------------
-# FILTRADO FINAL
-# ----------------------------
-filtered = df.copy()
+# =====================================================
+#  RANKING DEL ASSET CLASS
+# =====================================================
+df_rank = df_filtered.groupby("FUND MANAGER", as_index=False).agg({
+    "GPScore": "mean"
+})
 
-if selected_asset != "Todos":
-    filtered = filtered[filtered["ASSET CLASS"] == selected_asset]
+df_rank["Rank"] = df_rank["GPScore"].rank(ascending=False, method="dense").astype(int)
+df_rank = df_rank.sort_values("Rank")
 
-gp_df = pd.DataFrame() # Inicializar como vacío
+total_gps = len(df_rank)
+rank_gp = int(df_rank[df_rank["FUND MANAGER"] == selected_gp]["Rank"].iloc[0])
 
-if selected_gp:
-    filtered_gp = filtered[filtered["FUND MANAGER"] == selected_gp]
-    gp_df = filtered_gp[filtered_gp["FUND SIZE (USD MN)"] >= min_fund_size].copy()
+# =====================================================
+#  ARMAR TABLA DE RESULTADOS
+# =====================================================
+result_rows = []
+for gp in df_rank["FUND MANAGER"]:
+    sub = df_filtered[df_filtered["FUND MANAGER"] == gp]
 
+    num_funds = len(sub)
+    last_vintage = sub["VINTAGE / INCEPTION YEAR"].max()
+    last_fund_size = sub.loc[sub["VINTAGE / INCEPTION YEAR"].idxmax(), "FUND SIZE (USD MN)"]
+    total_aum = sub["FUND SIZE (USD MN)"].sum()
+    gp_total_aum = sub["FUND MANAGER TOTAL AUM (USD MN)"].iloc[0]
+    asset_class = sub["ASSET CLASS"].iloc[0]
+    strategy = sub["STRATEGY"].iloc[0]
+    region = sub["PRIMARY REGION FOCUS"].iloc[0]
+    score = sub["GPScore"].iloc[0] * 100
 
-# ----------------------------
-# RESULTADOS
-# ----------------------------
-st.subheader("Resultados del GP Seleccionado")
+    # Identificar si es el GP seleccionado
+    highlight = "highlight-row" if gp == selected_gp else ""
 
-if selected_gp and len(gp_df) > 0:
-    
-    # Cálculos
-    num_funds = len(gp_df)
-    last_vintage = gp_df["VINTAGE / INCEPTION YEAR"].max()
-    
-    idx_max_vintage = gp_df["VINTAGE / INCEPTION YEAR"].idxmax()
-    last_fund_size = gp_df.loc[idx_max_vintage, "FUND SIZE (USD MN)"]
-    
-    total_aum_considered = gp_df["FUND SIZE (USD MN)"].sum()
-    gp_total_aum = gp_df["FUND MANAGER TOTAL AUM (USD MN)"].iloc[0]
+    # Etiqueta de ranking SOLO para el GP seleccionado
+    gp_label = f"{gp} <b>({rank_gp}º de {total_gps})</b>" if gp == selected_gp else gp
 
-    asset_class = gp_df["ASSET CLASS"].iloc[0]
-    strategy = gp_df["STRATEGY"].iloc[0]
-    region = gp_df["PRIMARY REGION FOCUS"].iloc[0]
+    result_rows.append(f"""
+    <tr class="{highlight}">
+        <td>{gp_label}</td>
+        <td>{asset_class}</td>
+        <td>{strategy}</td>
+        <td>{region}</td>
+        <td>{num_funds}</td>
+        <td>{int(last_vintage)}</td>
+        <td>{last_fund_size:,.0f}</td>
+        <td>{total_aum:,.0f}</td>
+        <td>{gp_total_aum:,.0f}</td>
+        <td>{score:.2f}%</td>
+    </tr>
+    """)
 
-    gp_score_raw = gp_df["GPScore"].iloc[0]
-    gp_score = f"{gp_score_raw * 100:.2f}%"
+html_table = f"""
+<h2>Screening Results</h2>
 
-    # -------------------------
-    # TABLA HTML CORREGIDA: Usando <br> para títulos limpios
-    # -------------------------
-    html_table = f"""
-    <div style="width: 100%;">
-    <table style="width: 100%; table-layout: fixed;">
-        <thead>
-            <tr>
-                <th>GP<br>(Fund Manager)</th>
-                <th>Asset<br>Class</th>
-                <th>Strategy</th>
-                <th>Region</th>
-                <th>#<br>Funds</th>
-                <th>Last<br>Vintage</th>
-                <th>Last Fund<br>Size (USDm)</th>
-                <th>Total AUM<br>Considerado (USDm)</th>
-                <th>GP Total<br>AUM (USDm)</th>
-                <th>Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{selected_gp}</td>
-                <td>{asset_class}</td>
-                <td>{strategy}</td>
-                <td>{region}</td>
-                <td>{num_funds}</td>
-                <td>{int(last_vintage)}</td>
-                <td>{last_fund_size:,.0f}</td>
-                <td>{total_aum_considered:,.0f}</td>
-                <td>{gp_total_aum:,.0f}</td>
-                <td><b>{gp_score}</b></td>
-            </tr>
-        </tbody>
-    </table>
-    </div>
-    """
+<table>
+    <thead>
+        <tr>
+            <th>GP (Fund Manager)</th>
+            <th>Asset Class</th>
+            <th>Strategy</th>
+            <th>Region</th>
+            <th># Funds</th>
+            <th>Last Vintage</th>
+            <th>Last Fund Size (USDm)</th>
+            <th>Total AUM Considerado (USDm)</th>
+            <th>GP Total AUM (USDm)</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {''.join(result_rows)}
+    </tbody>
+</table>
+"""
 
-
-    st.markdown(html_table, unsafe_allow_html=True)
-
-else:
-    st.info("Seleccione un GP para ver el resumen o ajuste los filtros.")
-
+# Mostrar tabla final
+st.markdown(html_table, unsafe_allow_html=True)
 
