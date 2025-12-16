@@ -111,19 +111,20 @@ if selected_gp != "Todos":
             "Score": [gp_score]
         })
 
-        st.table(resumen.style.set_table_styles([
+        resumen_styled = resumen.style.set_table_styles([
             {"selector": "th", "props": "font-size: 14px; text-align: center;"},
             {"selector": "td", "props": "font-size: 13px;"}
         ]).set_properties(**{
             "text-align": "center",
             "width": "150px"
-        }))
+        })
 
         st.table(resumen_styled)
 
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
