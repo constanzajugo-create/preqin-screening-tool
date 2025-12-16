@@ -200,7 +200,6 @@ if not gp_rows_screening.empty:
                 <td>{last_fund_size:,.0f}</td>
                 <td>{total_aum_considered:,.0f}</td>
                 <td>{gp_total_aum:,.0f}</td>
-                <td>{gp_score}</td>
             </tr>
         </tbody>
     </table>
@@ -326,6 +325,7 @@ axs[1, 1].legend()
 # --------------------------------------------------------
 plt.tight_layout()
 st.pyplot(fig)
+
 
 
 
