@@ -252,6 +252,83 @@ if "Fund Score" in df_funds_display.columns:
 
 st.dataframe(df_funds_display.round(2), use_container_width=True, hide_index=True)
 
+import matplotlib.pyplot as plt
+
+# --------------------------------------------------------
+# GRÁFICOS (Performance, TVPI, IRR, DPI)
+# --------------------------------------------------------
+
+# Creamos la figura general con 4 subgráficos (2x2)
+fig, axs = plt.subplots(2, 2, figsize=(20, 10))
+
+# Cargar los datos de cuartiles para cada métrica
+df_funds_display["TVPI_Q1"] = df_funds_display["TVPI Q1"]
+df_funds_display["TVPI_Q2"] = df_funds_display["TVPI Q2"]
+df_funds_display["TVPI_Q3"] = df_funds_display["TVPI Q3"]
+df_funds_display["TVPI_Q4"] = df_funds_display["TVPI Q4"]
+
+df_funds_display["IRR_Q1"] = df_funds_display["IRR Q1"]
+df_funds_display["IRR_Q2"] = df_funds_display["IRR Q2"]
+df_funds_display["IRR_Q3"] = df_funds_display["IRR Q3"]
+df_funds_display["IRR_Q4"] = df_funds_display["IRR Q4"]
+
+df_funds_display["DPI_Q1"] = df_funds_display["DPI Q1"]
+df_funds_display["DPI_Q2"] = df_funds_display["DPI Q2"]
+df_funds_display["DPI_Q3"] = df_funds_display["DPI Q3"]
+df_funds_display["DPI_Q4"] = df_funds_display["DPI Q4"]
+
+# Barra apilada para Performance Score (usando TVPI)
+axs[0, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q1"], label="Q1", color='lightblue')
+axs[0, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q2"], bottom=df_funds_display["TVPI_Q1"], label="Q2", color='lightgreen')
+axs[0, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q3"], bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"], label="Q3", color='yellow')
+axs[0, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q4"], bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"] + df_funds_display["TVPI_Q3"], label="Q4", color='blue')
+
+axs[0, 0].set_title("TVPI")
+axs[0, 0].set_xlabel("Year")
+axs[0, 0].set_ylabel("TVPI")
+axs[0, 0].legend()
+
+# Barra apilada para IRR
+axs[0, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q1"], label="Q1", color='lightblue')
+axs[0, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q2"], bottom=df_funds_display["IRR_Q1"], label="Q2", color='lightgreen')
+axs[0, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q3"], bottom=df_funds_display["IRR_Q1"] + df_funds_display["IRR_Q2"], label="Q3", color='yellow')
+axs[0, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q4"], bottom=df_funds_display["IRR_Q1"] + df_funds_display["IRR_Q2"] + df_funds_display["IRR_Q3"], label="Q4", color='blue')
+
+axs[0, 1].set_title("IRR")
+axs[0, 1].set_xlabel("Year")
+axs[0, 1].set_ylabel("IRR (%)")
+axs[0, 1].legend()
+
+# Barra apilada para DPI
+axs[1, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q1"], label="Q1", color='lightblue')
+axs[1, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q2"], bottom=df_funds_display["DPI_Q1"], label="Q2", color='lightgreen')
+axs[1, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q3"], bottom=df_funds_display["DPI_Q1"] + df_funds_display["DPI_Q2"], label="Q3", color='yellow')
+axs[1, 0].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q4"], bottom=df_funds_display["DPI_Q1"] + df_funds_display["DPI_Q2"] + df_funds_display["DPI_Q3"], label="Q4", color='blue')
+
+axs[1, 0].set_title("DPI")
+axs[1, 0].set_xlabel("Year")
+axs[1, 0].set_ylabel("DPI")
+axs[1, 0].legend()
+
+# Barra apilada para Performance Score (general)
+axs[1, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q1"], label="Q1", color='lightblue')
+axs[1, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q2"], bottom=df_funds_display["TVPI_Q1"], label="Q2", color='lightgreen')
+axs[1, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q3"], bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"], label="Q3", color='yellow')
+axs[1, 1].bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q4"], bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"] + df_funds_display["TVPI_Q3"], label="Q4", color='blue')
+
+axs[1, 1].set_title("Performance Score")
+axs[1, 1].set_xlabel("Year")
+axs[1, 1].set_ylabel("Performance Score")
+axs[1, 1].legend()
+
+# --------------------------------------------------------
+# SHOW PLOTS
+# --------------------------------------------------------
+plt.tight_layout()
+st.pyplot(fig)
+
+
+
 
 
 
