@@ -89,9 +89,9 @@ current_year = st.sidebar.number_input("Año Actual", 1990, 2035, 2025)
 
 # Filtrar GPs según asset class
 if selected_asset == "Todos":
-    gps_filtered = sorted(df["FUND MANAGER"].unique().tolist())
+    gps_filtered = sorted(df["FUND MANAGER"].dropna().unique().tolist())
 else:
-    gps_filtered = sorted(df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].unique().tolist())
+    gps_filtered = sorted(df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].dropna().unique().tolist())
 
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_filtered)
 
@@ -191,5 +191,6 @@ html_table = f"""
 
 # Mostrar tabla final
 st.markdown(html_table, unsafe_allow_html=True)
+
 
 
