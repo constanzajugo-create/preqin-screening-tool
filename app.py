@@ -100,11 +100,6 @@ df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 # --------------------------------------------------------
 st.sidebar.header("Filtros")
 
-selected_asset = st.sidebar.selectbox(
-    "Asset Class",
-    ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
-)
-
 # Expand vintage
 expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 0, 20, 1)
 
@@ -113,6 +108,11 @@ min_fund_size = st.sidebar.number_input("Minimum Fund Size (USDm)", 0, 5000, 2)
 
 # Current year
 current_year = st.sidebar.number_input("Año Actual", 1990, 2035, 2025)
+
+selected_asset = st.sidebar.selectbox(
+    "Asset Class",
+    ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
+)
 
 # GP list depends on Asset Class
 if selected_asset == "Todos":
@@ -241,6 +241,7 @@ df_rank_display = df_rank[[
 df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
 
 st.dataframe(df_rank_display, use_container_width=True)
+
 
 
 
