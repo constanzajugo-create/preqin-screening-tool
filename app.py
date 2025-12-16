@@ -110,10 +110,11 @@ if selected_gp != "Todos":
             "Score": [gp_score]
         })
 
-        st.dataframe(resumen, use_container-width=True)
+        st.dataframe(resumen, use_container_width=True)
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
