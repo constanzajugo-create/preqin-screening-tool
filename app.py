@@ -285,16 +285,16 @@ import matplotlib.pyplot as plt
 #TVPI:
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q1"], label="Q1")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q2"],
-       bottom=df_funds_display["TVPI_Q1"], label="Q2")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q3"],
-       bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"], label="Q3")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q4"],
-       bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"] + df_funds_display["TVPI_Q3"], label="Q4")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q1"], label="Q1")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q2"],
+       bottom=df_funds_display["TVPI Q1"], label="Q2")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q3"],
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q4"],
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
 ax.set_title("TVPI", fontsize=16)
-ax.set_xlabel("Vintage")
+ax.set_xlabel("Fund Name")
 ax.set_ylabel("TVPI")
 ax.legend()
 
@@ -303,16 +303,16 @@ st.pyplot(fig)
 #IRR:
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q1"], label="Q1")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q2"],
-       bottom=df_funds_display["IRR_Q1"], label="Q2")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q3"],
-       bottom=df_funds_display["IRR_Q1"] + df_funds_display["IRR_Q2"], label="Q3")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["IRR_Q4"],
-       bottom=df_funds_display["IRR_Q1"] + df_funds_display["IRR_Q2"] + df_funds_display["IRR_Q3"], label="Q4")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["IRR Q1"], label="Q1")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["IRR Q2"],
+       bottom=df_funds_display["IRR Q1"], label="Q2")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["IRR Q3"],
+       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"], label="Q3")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["IRR Q4"],
+       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"] + df_funds_display["IRR Q3"], label="Q4")
 
 ax.set_title("IRR", fontsize=16)
-ax.set_xlabel("Vintage")
+ax.set_xlabel("Fund Name")
 ax.set_ylabel("IRR (%)")
 ax.legend()
 
@@ -321,16 +321,16 @@ st.pyplot(fig)
 #DPI:
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q1"], label="Q1")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q2"],
-       bottom=df_funds_display["DPI_Q1"], label="Q2")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q3"],
-       bottom=df_funds_display["DPI_Q1"] + df_funds_display["DPI_Q2"], label="Q3")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["DPI_Q4"],
-       bottom=df_funds_display["DPI_Q1"] + df_funds_display["DPI_Q2"] + df_funds_display["DPI_Q3"], label="Q4")
+ax.bar(df_funds_display["VINTAGER"], df_funds_display["DPI Q1"], label="Q1")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["DPI Q2"],
+       bottom=df_funds_display["DPI Q1"], label="Q2")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["DPI Q3"],
+       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"], label="Q3")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["DPI Q4"],
+       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4")
 
 ax.set_title("DPI", fontsize=16)
-ax.set_xlabel("Vintage")
+ax.set_xlabel("Fund Name")
 ax.set_ylabel("DPI")
 ax.legend()
 
@@ -339,20 +339,21 @@ st.pyplot(fig)
 #Performance Score
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q1"], label="Q1")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q2"],
-       bottom=df_funds_display["TVPI_Q1"], label="Q2")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q3"],
-       bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"], label="Q3")
-ax.bar(df_funds_display["VINTAGE / INCEPTION YEAR"], df_funds_display["TVPI_Q4"],
-       bottom=df_funds_display["TVPI_Q1"] + df_funds_display["TVPI_Q2"] + df_funds_display["TVPI_Q3"], label="Q4")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q1"], label="Q1")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q2"],
+       bottom=df_funds_display["TVPI Q1"], label="Q2")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q3"],
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI_ 2"], label="Q3")
+ax.bar(df_funds_display["VINTAGE"], df_funds_display["TVPI Q4"],
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
 ax.set_title("Performance Score", fontsize=16)
-ax.set_xlabel("Vintage")
+ax.set_xlabel("Fund Name")
 ax.set_ylabel("Score")
 ax.legend()
 
 st.pyplot(fig)
+
 
 
 
