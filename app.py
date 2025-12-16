@@ -31,6 +31,8 @@ th {
     font-weight: 600;
 }
 
+tbody tr:nth-child(even) { background-color: #f9f9f9; }
+
 .highlight {
     background-color: #c8efb4 !important;
     font-weight: 700;
@@ -41,15 +43,19 @@ th {
 st.title("Screening Tool")
 
 # --------------------------------------------------------
-# CLEANING
+# CLEANING FUNCTIONS
 # --------------------------------------------------------
 def clean_year(x):
     try:
-        digits = "".join(ch for ch in str(x) if ch.isdigit())
+        x = str(x)
+        digits = "".join(ch for ch in x if ch.isdigit())
         return int(digits) if len(digits) == 4 else np.nan
     except:
         return np.nan
 
+# --------------------------------------------------------
+# LOAD DATA
+# --------------------------------------------------------
 @st.cache_data
 def load_data():
     df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
@@ -59,8 +65,11 @@ def load_data():
 
 df = load_data()
 
+# --------------------------------------------------------
+# NORMALIZE ASSET CLASS
+# --------------------------------------------------------
 def normalize_asset(x):
-    x = str(x).lower()
+    x = str(x).lower().strip()
     if "debt" in x: return "Private Debt"
     if "equity" in x: return "Private Equity"
     if "infra" in x: return "Infrastructure"
@@ -70,33 +79,40 @@ def normalize_asset(x):
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
 # --------------------------------------------------------
-# SIDEBAR
+# SIDEBAR FILTERS (TODOS RESTAURADOS)
 # --------------------------------------------------------
 st.sidebar.header("Filtros")
 
+expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 0, 20, 1)
 min_fund_size = st.sidebar.number_input("Minimum Last Fund Size (USDm)", 0, 5000, 2000)
+current_year = st.sidebar.number_input("Año Actual", 1990, 2035, 2025)
 
 selected_asset = st.sidebar.selectbox(
     "Asset Class",
     ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 )
 
-# Base por asset class (SIN filtro de tamaño)
+# Base sin filtro de tamaño
 if selected_asset != "Todos":
-    df_filtered = df[df["ASSET CLASS"] == selected_asset].copy()
+    df_asset = df[df["ASSET CLASS"] == selected_asset].copy()
 else:
-    df_filtered = df.copy()
+    df_asset = df.copy()
 
-gps = sorted(df_filtered["FUND MANAGER"].dropna().unique())
-selected_gp = st.sidebar.selectbox("Seleccionar GP", gps)
-
-# --------------------------------------------------------
-# SCREENING DATA (CON FILTRO DE TAMAÑO)
-# --------------------------------------------------------
-df_screening = df_filtered[df_filtered["FUND SIZE (USD MN)"] >= min_fund_size].copy()
+gps_list = sorted(df_asset["FUND MANAGER"].dropna().unique())
+selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_list)
 
 # --------------------------------------------------------
-# GP-LEVEL RANKING (USANDO SOLO df_screening)
+# DATASETS SEPARADOS POR PROPÓSITO
+# --------------------------------------------------------
+
+# Screening (afecta score y ranking)
+df_screening = df_asset[df_asset["FUND SIZE (USD MN)"] >= min_fund_size].copy()
+
+# Fondos completos (histórico)
+df_funds_all = df_asset.copy()
+
+# --------------------------------------------------------
+# GP-LEVEL RANKING (CORRECTO)
 # --------------------------------------------------------
 df_gp_rank = (
     df_screening
@@ -110,7 +126,12 @@ df_gp_rank = (
     })
 )
 
-df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(method="min", ascending=False).astype(int)
+df_gp_rank["Rank"] = (
+    df_gp_rank["GPScore"]
+    .rank(method="min", ascending=False)
+    .astype(int)
+)
+
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
 total_gps = len(df_gp_rank)
 
@@ -134,6 +155,59 @@ if not gp_rows_screening.empty:
     </div>
     """, unsafe_allow_html=True)
 
+    # Metrics
+    num_funds = len(gp_rows_screening)
+    last_vintage = gp_rows_screening["VINTAGE / INCEPTION YEAR"].max()
+
+    if gp_rows_screening["VINTAGE / INCEPTION YEAR"].notna().any():
+        idx = gp_rows_screening["VINTAGE / INCEPTION YEAR"].idxmax()
+        last_fund_size = gp_rows_screening.loc[idx, "FUND SIZE (USD MN)"]
+    else:
+        last_fund_size = 0
+
+    total_aum_considered = gp_rows_screening["FUND SIZE (USD MN)"].sum()
+    gp_total_aum = gp_rows_screening["FUND MANAGER TOTAL AUM (USD MN)"].iloc[0]
+
+    asset_class = gp_rows_screening["ASSET CLASS"].iloc[0]
+    strategy = gp_rows_screening["STRATEGY"].iloc[0]
+    region = gp_rows_screening["PRIMARY REGION FOCUS"].iloc[0]
+    gp_score = f"{gp_rows_screening['GPScore'].iloc[0] * 100:.2f}%"
+
+    html_gp = f"""
+    <table>
+        <thead>
+            <tr>
+                <th>GP</th>
+                <th>Asset Class</th>
+                <th>Strategy</th>
+                <th>Region</th>
+                <th># Funds (Screening)</th>
+                <th>Last Vintage</th>
+                <th>Last Fund Size</th>
+                <th>Total AUM Considerado</th>
+                <th>GP Total AUM</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="highlight">
+                <td>{selected_gp}</td>
+                <td>{asset_class}</td>
+                <td>{strategy}</td>
+                <td>{region}</td>
+                <td>{num_funds}</td>
+                <td>{"" if pd.isna(last_vintage) else int(last_vintage)}</td>
+                <td>{last_fund_size:,.0f}</td>
+                <td>{total_aum_considered:,.0f}</td>
+                <td>{gp_total_aum:,.0f}</td>
+                <td>{gp_score}</td>
+            </tr>
+        </tbody>
+    </table>
+    """
+
+    st.markdown(html_gp, unsafe_allow_html=True)
+
 # --------------------------------------------------------
 # ALL GPS TABLE (SCREENING)
 # --------------------------------------------------------
@@ -144,11 +218,11 @@ df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
 st.dataframe(df_rank_display.round(2), use_container_width=True)
 
 # --------------------------------------------------------
-# FUNDS TABLE (FULL HISTORY – SIN FILTRO)
+# FUNDS TABLE (FULL HISTORY – NO SIZE FILTER)
 # --------------------------------------------------------
 st.subheader(f"Fondos del GP: {selected_gp}")
 
-df_funds = df_filtered[df_filtered["FUND MANAGER"] == selected_gp].copy()
+df_funds = df_funds_all[df_funds_all["FUND MANAGER"] == selected_gp].copy()
 df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 
 desired_cols = [
@@ -172,6 +246,9 @@ df_funds_display = df_funds_display.rename(columns={
     "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1"
 })
 
-df_funds_display["Fund Score"] = df_funds_display["Fund Score"] * 100
+if "Fund Score" in df_funds_display.columns:
+    df_funds_display["Fund Score"] *= 100
+
 st.dataframe(df_funds_display.round(2), use_container_width=True, hide_index=True)
+
 
