@@ -1,15 +1,47 @@
 import streamlit as st
 import pandas as pd
 
-st.title("Screening Tool")
-
 st.markdown("""
 <style>
-table {
-    width: 100% !important;
+/* Centrar tabla en la página */
+div[data-testid="stDataFrame"] {
+    width: 95% !important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Ajustar fuente */
+.dataframe thead th {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+}
+
+.dataframe tbody td {
+    font-size: 14px !important;
+    text-align: center !important;
+}
+
+/* Bordes suaves */
+.dataframe {
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+}
+
+/* Hacer que el header NO se rompa */
+th {
+    white-space: nowrap !important;
+}
+
+/* Alternar filas */
+tbody tr:nth-child(even) {
+    background-color: #f7f7f7 !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
+st.title("Screening Tool")
+
 
 # --- Cargar CSV ---
 @st.cache_data
@@ -118,19 +150,17 @@ if selected_gp != "Todos":
             "Score": [gp_score]
         })
 
-        resumen_styled = resumen.style.set_table_styles([
-            {"selector": "th", "props": "font-size: 14px; text-align: center;"},
-            {"selector": "td", "props": "font-size: 13px;"}
-        ]).set_properties(**{
-            "text-align": "center",
-            "width": "150px"
-        })
+        st.dataframe(
+            resumen,
+            use_container_width=True,
+            hide_index=True
+        )
 
-        st.table(resumen_styled)
 
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
