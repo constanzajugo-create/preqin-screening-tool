@@ -53,8 +53,6 @@ def clean_year(x):
     except:
         return np.nan
 
-
-
 # --------------------------------------------------------
 # LOAD DATA
 # --------------------------------------------------------
@@ -89,9 +87,6 @@ df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 # SIDEBAR FILTERS (TODOS RESTAURADOS)
 # --------------------------------------------------------
 st.sidebar.header("Filtros")
-
-expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 0, 20, 1)
-current_year = st.sidebar.number_input("Año Actual", 1990, 2035, 2025)
 
 selected_asset = st.sidebar.selectbox(
     "Asset Class",
@@ -354,6 +349,7 @@ axs[1, 1].legend()
 # --------------------------------------------------------
 plt.tight_layout()
 st.pyplot(fig)
+
 
 
 
