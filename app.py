@@ -3,15 +3,6 @@ import pandas as pd
 
 st.title("Screening Tool")
 
-st.table(resumen.style.set_table_styles([
-    {"selector": "th", "props": "font-size: 14px; text-align: center;"},
-    {"selector": "td", "props": "font-size: 13px;"}
-]).set_properties(**{
-    "text-align": "center",
-    "width": "150px"
-}))
-
-
 # --- Cargar CSV ---
 @st.cache_data
 def load_data():
@@ -119,10 +110,18 @@ if selected_gp != "Todos":
             "Score": [gp_score]
         })
 
-        st.dataframe(resumen, use_container_width=True, hide_index=True)
+        st.table(resumen.style.set_table_styles([
+            {"selector": "th", "props": "font-size: 14px; text-align: center;"},
+            {"selector": "td", "props": "font-size: 13px;"}
+        ]).set_properties(**{
+            "text-align": "center",
+            "width": "150px"
+        }))
+
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
