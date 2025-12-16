@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 
-# ==========================
-#  ESTILOS CSS (TODO DENTRO DEL MISMO BLOQUE)
-# ==========================
+# ----------------------------
+# ESTILO GLOBAL PARA TÍTULOS
+# ----------------------------
 st.markdown("""
 <style>
-
+/* Aumentar el ancho máximo del cuerpo central */
 .main .block-container {
     max-width: 1500px;
     padding-left: 2rem;
@@ -37,30 +37,26 @@ th {
 tbody tr:nth-child(even) {
     background-color: #fafafa;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
-
-# ==========================
+# ----------------------------
 # TÍTULO
-# ==========================
+# ----------------------------
 st.title("Screening Tool")
 
-
-# ==========================
+# ----------------------------
 # CARGA CSV
-# ==========================
+# ----------------------------
 @st.cache_data
 def load_data():
     return pd.read_csv("DB_FINAL_WITH_SCORES.csv")
 
 df = load_data()
 
-
-# ==========================
+# ----------------------------
 # NORMALIZAR ASSET CLASS
-# ==========================
+# ----------------------------
 def normalize_asset(x):
     x = str(x).strip().lower()
     if "debt" in x: return "Private Debt"
@@ -71,10 +67,9 @@ def normalize_asset(x):
 
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
-
-# ==========================
+# ----------------------------
 # SIDEBAR – FILTROS
-# ==========================
+# ----------------------------
 st.sidebar.header("Filtros")
 
 expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 1, 20, 1)
@@ -84,6 +79,7 @@ current_year = st.sidebar.number_input("Año Actual", 1990, 2030, 2025)
 asset_classes = ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 selected_asset = st.sidebar.selectbox("Asset Class", asset_classes)
 
+# GP dinámicos
 if selected_asset == "Todos":
     gps_filtered = sorted(df["FUND MANAGER"].dropna().unique())
 else:
@@ -91,10 +87,9 @@ else:
 
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_filtered)
 
-
-# ==========================
+# ----------------------------
 # FILTRADO FINAL
-# ==========================
+# ----------------------------
 filtered = df.copy()
 
 if selected_asset != "Todos":
@@ -105,10 +100,9 @@ if selected_gp != "Todos":
 
 filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
-
-# ==========================
+# ----------------------------
 # RESULTADOS
-# ==========================
+# ----------------------------
 st.subheader("Resultados del GP Seleccionado")
 
 if selected_gp != "Todos":
@@ -129,9 +123,9 @@ if selected_gp != "Todos":
         gp_score_raw = gp_df["GPScore"].iloc[0]
         gp_score = f"{gp_score_raw * 100:.2f}%"
 
-        # ==========================
+        # -------------------------
         # HTML TABLE
-        # ==========================
+        # -------------------------
         html_table = f"""
         <div style="overflow-x: auto; width: 100%;">
         <table>
@@ -171,9 +165,6 @@ if selected_gp != "Todos":
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
-
-
-
 
 
 
