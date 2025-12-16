@@ -61,8 +61,60 @@ if selected_gp != "Todos":
 filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
 # --- Mostrar resultados ---
+# --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
-st.dataframe(filtered)
+
+if selected_gp != "Todos":
+    gp_df = filtered[filtered["FUND MANAGER"] == selected_gp]
+
+    if len(gp_df) > 0:
+
+        # Numero de fondos considerados
+        num_funds = len(gp_df)
+
+        # Último vintage
+        last_vintage = gp_df["VINTAGE / INCEPTION YEAR"].max()
+
+        # Tamaño del fondo del último vintage
+        last_fund_size = gp_df.loc[
+            gp_df["VINTAGE / INCEPTION YEAR"].idxmax(),
+            "FUND SIZE (USD MN)"
+        ]
+
+        # Total AUM considerado
+        total_aum_considered = gp_df["FUND SIZE (USD MN)"].sum()
+
+        # AUM total del GP
+        gp_total_aum = gp_df["FUND MANAGER TOTAL AUM (USD MN)"].iloc[0]
+
+        # Asset class y estrategia principal (primera fila)
+        asset_class = gp_df["ASSET CLASS"].iloc[0]
+        strategy = gp_df["STRATEGY"].iloc[0]
+        region = gp_df["PRIMARY REGION FOCUS"].iloc[0]
+
+        # Score final del GP
+        gp_score = gp_df["GPScore"].iloc[0]
+
+        # Construir tabla resumen
+        resumen = pd.DataFrame({
+            "GP (Fund Manager)": [selected_gp],
+            "Asset Class": [asset_class],
+            "Strategy": [strategy],
+            "Region": [region],
+            "# Funds": [num_funds],
+            "Last Vintage": [last_vintage],
+            "Last Fund Size (USDm)": [last_fund_size],
+            "Total AUM Considerado (USDm)": [total_aum_considered],
+            "GP Total AUM (USDm)": [gp_total_aum],
+            "Score": [gp_score]
+        })
+
+        st.dataframe(resumen, hide_index=True)
+
+else:
+    st.info("Seleccione un GP para ver el resumen.")
+
+
 
 
 
