@@ -91,7 +91,6 @@ df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 st.sidebar.header("Filtros")
 
 expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 0, 20, 1)
-min_fund_size = st.sidebar.number_input("Minimum Last Fund Size (USDm)", 0, 5000, 2000)
 current_year = st.sidebar.number_input("Año Actual", 1990, 2035, 2025)
 
 selected_asset = st.sidebar.selectbox(
@@ -113,7 +112,6 @@ selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_list)
 # --------------------------------------------------------
 
 # Screening (afecta score y ranking)
-df_screening = df_asset[df_asset["FUND SIZE (USD MN)"] >= min_fund_size].copy()
 
 # Fondos completos (histórico)
 df_funds_all = df_asset.copy()
@@ -354,6 +352,7 @@ axs[1, 1].legend()
 # --------------------------------------------------------
 plt.tight_layout()
 st.pyplot(fig)
+
 
 
 
