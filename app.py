@@ -93,7 +93,8 @@ if selected_gp != "Todos":
         region = gp_df["PRIMARY REGION FOCUS"].iloc[0]
 
         # Score final del GP
-        gp_score = gp_df["GPScore"].iloc[0]
+        gp_score_raw = gp_df["GPScore"].iloc[0]
+        gp_score = f"{gp_score_raw * 100:.2f}%"
 
         # Construir tabla resumen
         resumen = pd.DataFrame({
@@ -113,6 +114,7 @@ if selected_gp != "Todos":
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
