@@ -35,7 +35,7 @@ min_fund_size = st.sidebar.number_input("Minimum Fund Size (USDm)", 0, 5000, 2)
 current_year = st.sidebar.number_input("Año Actual", 1990, 2030, 2025)
 
 asset_classes = ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
-selected_asset = st.sidebar.selectbox("Asset Class", ["Todos"] + asset_classes)
+selected_asset = st.sidebar.selectbox("Asset Class", asset_classes)
 
 gps = sorted(df["FUND MANAGER"].dropna().unique())
 selected_gp = st.sidebar.selectbox("Seleccionar GP", ["Todos"] + gps)
@@ -54,5 +54,6 @@ filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 # --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
 st.dataframe(filtered)
+
 
 
