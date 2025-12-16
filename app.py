@@ -3,6 +3,12 @@ import pandas as pd
 
 st.title("Screening Tool")
 
+st.markdown("""
+<style>
+    .stDataFrame { width: 100% !important; }
+</style>
+""", unsafe_allow_html=True)
+
 # --- Cargar CSV ---
 @st.cache_data
 def load_data():
@@ -110,10 +116,11 @@ if selected_gp != "Todos":
             "Score": [gp_score]
         })
 
-        st.dataframe(resumen, use_container_width=True)
+        st.dataframe(resumen, use_container_width=True, hide_index=True)
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
