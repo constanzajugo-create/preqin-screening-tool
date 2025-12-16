@@ -3,11 +3,14 @@ import pandas as pd
 
 st.title("Screening Tool")
 
-st.markdown("""
-<style>
-    .stDataFrame { width: 100% !important; }
-</style>
-""", unsafe_allow_html=True)
+st.table(resumen.style.set_table_styles([
+    {"selector": "th", "props": "font-size: 14px; text-align: center;"},
+    {"selector": "td", "props": "font-size: 13px;"}
+]).set_properties(**{
+    "text-align": "center",
+    "width": "150px"
+}))
+
 
 # --- Cargar CSV ---
 @st.cache_data
@@ -120,6 +123,7 @@ if selected_gp != "Todos":
 
 else:
     st.info("Seleccione un GP para ver el resumen.")
+
 
 
 
