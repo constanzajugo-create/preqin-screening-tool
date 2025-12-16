@@ -201,7 +201,7 @@ st.dataframe(df_rank_display, use_container_width=True)
 # --------------------------------------------------------
 # FUNDS TABLE — SELECTED GP (ROBUST)
 # --------------------------------------------------------
-st.subheader("Fondos del GP: {selected_gp}")
+st.subheader(f"Fondos del GP: {selected_gp}")
 
 df_funds = df_filtered[df_filtered["FUND MANAGER"] == selected_gp].copy()
 df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
@@ -232,6 +232,7 @@ if "Fund Score" in df_funds_display.columns:
 
 df_funds_display = df_funds_display.round(2)
 st.dataframe(df_funds_display, use_container_width=True, hide_index=True)
+
 
 
 
