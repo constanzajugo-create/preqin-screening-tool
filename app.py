@@ -56,6 +56,31 @@ div[data-testid="stMarkdown"] > div > div {
 """, unsafe_allow_html=True)
 
 # =====================================================
+#  FUNCIONES
+# =====================================================
+
+def safe_year(x):
+    try:
+        # eliminar espacios y caracteres raros
+        x = str(x).strip()
+
+        # si está vacío o es NaN → devolver vacío
+        if x == "" or x.lower() in ["nan", "none", "null", "n/a", "-", "--"]:
+            return ""
+
+        # Extraer sólo números
+        digits = "".join(ch for ch in x if ch.isdigit())
+
+        if digits == "":
+            return ""
+
+        return int(digits)
+
+    except:
+        return ""
+
+
+# =====================================================
 #  CARGAR DATA
 # =====================================================
 @st.cache_data
@@ -157,7 +182,7 @@ for gp in df_rank["FUND MANAGER"]:
         <td>{strategy}</td>
         <td>{region}</td>
         <td>{num_funds}</td>
-        <td>{"" if pd.isna(last_vintage) else int(float(last_vintage))}</td>
+        <td>{safe_year(last_vintage)}</td>
         <td>{last_fund_size:,.0f}</td>
         <td>{total_aum:,.0f}</td>
         <td>{gp_total_aum:,.0f}</td>
@@ -191,6 +216,7 @@ html_table = f"""
 
 # Mostrar tabla final
 st.markdown(html_table, unsafe_allow_html=True)
+
 
 
 
