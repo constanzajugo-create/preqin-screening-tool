@@ -9,7 +9,6 @@ st.markdown("""
 <style>
 h1, h2, h3 { text-align: center; }
 
-/* Tabla principal */
 table {
     width: 98%;
     margin-left: auto;
@@ -96,11 +95,12 @@ selected_asset = st.sidebar.selectbox(
     ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 )
 
-# GP list depends on Asset Class
 if selected_asset == "Todos":
     gps_list = sorted(df["FUND MANAGER"].dropna().unique())
 else:
-    gps_list = sorted(df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].dropna().unique())
+    gps_list = sorted(
+        df[df["ASSET CLASS"] == selected_asset]["FUND MANAGER"].dropna().unique()
+    )
 
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_list)
 
@@ -114,29 +114,47 @@ else:
 
 df_filtered = df_filtered[df_filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
-# Fix GPScore safely
-df_filtered["GPScore"] = pd.to_numeric(df_filtered["GPScore"], errors="coerce").fillna(0)
-
 # --------------------------------------------------------
-# RANKING (GP LEVEL)
+# ✅ CORRECT GP-LEVEL RANKING
 # --------------------------------------------------------
-df_rank = df_filtered.copy()
-df_rank["Rank"] = df_rank["GPScore"].rank(method="min", ascending=False).astype(int)
-df_rank = df_rank.sort_values("GPScore", ascending=False)
+df_gp_rank = (
+    df_filtered
+    .groupby("FUND MANAGER", as_index=False)
+    .agg({
+        "GPScore": "max",
+        "ASSET CLASS": "first",
+        "STRATEGY": "first",
+        "PRIMARY REGION FOCUS": "first",
+        "FUND MANAGER TOTAL AUM (USD MN)": "first"
+    })
+)
 
-total_gps = df_rank["FUND MANAGER"].nunique()
+df_gp_rank["Rank"] = (
+    df_gp_rank["GPScore"]
+    .rank(method="min", ascending=False)
+    .astype(int)
+)
+
+df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
+total_gps = len(df_gp_rank)
 
 # --------------------------------------------------------
 # SELECTED GP SUMMARY
 # --------------------------------------------------------
-gp_rows = df_rank[df_rank["FUND MANAGER"] == selected_gp]
+gp_rows = df_filtered[df_filtered["FUND MANAGER"] == selected_gp]
 
 if not gp_rows.empty:
 
-    gp_rank = int(gp_rows["Rank"].iloc[0])
-    num_funds = len(gp_rows)
+    gp_rank = int(
+        df_gp_rank.loc[
+            df_gp_rank["FUND MANAGER"] == selected_gp,
+            "Rank"
+        ].iloc[0]
+    )
 
+    num_funds = len(gp_rows)
     last_vintage = gp_rows["VINTAGE / INCEPTION YEAR"].max()
+
     if gp_rows["VINTAGE / INCEPTION YEAR"].notna().any():
         idx = gp_rows["VINTAGE / INCEPTION YEAR"].idxmax()
         last_fund_size = gp_rows.loc[idx, "FUND SIZE (USD MN)"]
@@ -161,9 +179,16 @@ if not gp_rows.empty:
     <table>
         <thead>
             <tr>
-                <th>GP</th><th>Asset Class</th><th>Strategy</th><th>Region</th>
-                <th># Funds</th><th>Last Vintage</th><th>Last Fund Size</th>
-                <th>Total AUM Considerado</th><th>GP Total AUM</th><th>Score</th>
+                <th>GP</th>
+                <th>Asset Class</th>
+                <th>Strategy</th>
+                <th>Region</th>
+                <th># Funds</th>
+                <th>Last Vintage</th>
+                <th>Last Fund Size</th>
+                <th>Total AUM Considerado</th>
+                <th>GP Total AUM</th>
+                <th>Score</th>
             </tr>
         </thead>
         <tbody>
@@ -185,21 +210,18 @@ if not gp_rows.empty:
     st.markdown(html_gp, unsafe_allow_html=True)
 
 # --------------------------------------------------------
-# FULL TABLE OF ALL GPS FROM ASSET CLASS
+# ALL GPS TABLE (CORRECT)
 # --------------------------------------------------------
 st.subheader("Todos los GPs del Asset Class (ordenados por Score)")
 
-df_rank_display = df_rank[
-    ["FUND MANAGER","ASSET CLASS","STRATEGY",
-     "PRIMARY REGION FOCUS","FUND SIZE (USD MN)",
-     "VINTAGE / INCEPTION YEAR","GPScore","Rank"]
-].copy()
-
+df_rank_display = df_gp_rank.copy()
 df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
+df_rank_display = df_rank_display.round(2)
+
 st.dataframe(df_rank_display, use_container_width=True)
 
 # --------------------------------------------------------
-# FUNDS TABLE — SELECTED GP (ROBUST)
+# FUNDS TABLE — SELECTED GP
 # --------------------------------------------------------
 st.subheader(f"Fondos del GP: {selected_gp}")
 
@@ -231,9 +253,5 @@ if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
 
 df_funds_display = df_funds_display.round(2)
+
 st.dataframe(df_funds_display, use_container_width=True, hide_index=True)
-
-
-
-
-
