@@ -53,6 +53,8 @@ def clean_year(x):
     except:
         return np.nan
 
+
+
 # --------------------------------------------------------
 # LOAD DATA
 # --------------------------------------------------------
@@ -75,6 +77,11 @@ def normalize_asset(x):
     if "infra" in x: return "Infrastructure"
     if "real" in x: return "Real Estate"
     return "Other"
+
+def format_es(x, decimals=2):
+    if pd.isna(x):
+        return ""
+    return f"{x:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
@@ -214,13 +221,19 @@ if not gp_rows_screening.empty:
 st.subheader("Todos los GPs del Asset Class (ordenados por Score)")
 
 df_rank_display = df_gp_rank.copy()
-df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
 
-#Eliminar GPScore
+# Crear Score en %
+df_rank_display["Score"] = df_rank_display["GPScore"] * 100
+df_rank_display = df_rank_display.drop(columns=["GPScore"])
 
-df_rank_display= df_rank_display.drop(columns=["GPScore"])
+# FORMATO ES
+for col in df_rank_display.columns:
+    if col == "Score":
+        df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 2))
+    elif df_rank_display[col].dtype in ["float64", "int64"]:
+        df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 0))
 
-st.dataframe(df_rank_display.round(2), use_container_width=True)
+st.dataframe(df_rank_display, use_container_width=True)
 
 # --------------------------------------------------------
 # FUNDS TABLE (FULL HISTORY – NO SIZE FILTER)
@@ -255,7 +268,17 @@ df_funds_display = df_funds_display.rename(columns={
 if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
 
-st.dataframe(df_funds_display.round(2), use_container_width=True, hide_index=True)
+df_funds_fmt = df_funds_display.copy()
+
+for col in df_funds_fmt.columns:
+    if "IRR" in col or "Score" in col:
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
+    elif col in ["TVPI", "DPI"] or "Q" in col:
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
+    elif df_funds_fmt[col].dtype in ["float64", "int64"]:
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 0))
+
+st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
 
 import matplotlib.pyplot as plt
 
@@ -331,6 +354,7 @@ axs[1, 1].legend()
 # --------------------------------------------------------
 plt.tight_layout()
 st.pyplot(fig)
+
 
 
 
