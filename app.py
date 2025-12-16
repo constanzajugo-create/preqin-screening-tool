@@ -122,31 +122,46 @@ else:
 
 df_filtered = df_filtered[df_filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 
-# Reemplazar GPScore vacío con 0
-df["GPScore"] = pd.to_numeric(df["GPScore"], errors="coerce").fillna(0)
+# VERY IMPORTANT: fix GPScore here (not in df)
+df_filtered["GPScore"] = pd.to_numeric(df_filtered["GPScore"], errors="coerce").fillna(0)
 
 # --------------------------------------------------------
 # RANKING
 # --------------------------------------------------------
 df_rank = df_filtered.copy()
-df_rank["Rank"] = df_rank["GPScore"].rank(method="min", ascending=False).astype(int)
+
+df_rank["Rank"] = (
+    df_rank["GPScore"]
+    .rank(method="min", ascending=False)
+    .astype(int)
+)
+
 df_rank = df_rank.sort_values("GPScore", ascending=False)
 
 total_gps = df_rank["FUND MANAGER"].nunique()
 
 # --------------------------------------------------------
-# SELECTED GP DATA
+# SELECTED GP BLOCK
 # --------------------------------------------------------
 gp_rows = df_rank[df_rank["FUND MANAGER"] == selected_gp]
-gp_rank = gp_rows["Rank"].iloc[0] if len(gp_rows) > 0 else None
 
-st.subheader("Resultados del GP Seleccionado")
+if len(gp_rows) > 0:
 
-if gp_rank is not None:
-    # Compute summary
+    gp_rank = int(gp_rows["Rank"].iloc[0])
+
     num_funds = len(gp_rows)
+
+    # Fix vintage safely
     last_vintage = gp_rows["VINTAGE / INCEPTION YEAR"].max()
-    last_fund_size = gp_rows.loc[gp_rows["VINTAGE / INCEPTION YEAR"].idxmax(), "FUND SIZE (USD MN)"]
+    last_vintage_clean = "" if pd.isna(last_vintage) else int(last_vintage)
+
+    # Fix last_fund_size safely
+    if gp_rows["VINTAGE / INCEPTION YEAR"].notna().any():
+        idx = gp_rows["VINTAGE / INCEPTION YEAR"].idxmax()
+        last_fund_size = gp_rows.loc[idx, "FUND SIZE (USD MN)"]
+    else:
+        last_fund_size = 0
+
     total_aum_considered = gp_rows["FUND SIZE (USD MN)"].sum()
     gp_total_aum = gp_rows["FUND MANAGER TOTAL AUM (USD MN)"].iloc[0]
     asset_class = gp_rows["ASSET CLASS"].iloc[0]
@@ -215,6 +230,7 @@ df_rank_display = df_rank[[
 df_rank_display["Score %"] = df_rank_display["GPScore"] * 100
 
 st.dataframe(df_rank_display, use_container_width=True)
+
 
 
 
