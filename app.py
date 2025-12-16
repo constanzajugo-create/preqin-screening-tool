@@ -10,6 +10,23 @@ def load_data():
 
 df = load_data()
 
+# Normalizar columna ASSET CLASS
+def normalize_asset(x):
+    x = str(x).strip().lower()
+
+    if "debt" in x:
+        return "Private Debt"
+    if "equity" in x:
+        return "Private Equity"
+    if "infra" in x:
+        return "Infrastructure"
+    if "real" in x:
+        return "Real Estate"
+
+    return "Otros"
+
+df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
+
 # --- Filtros ---
 st.sidebar.header("Filtros")
 
@@ -17,7 +34,7 @@ expand_vintage = st.sidebar.number_input("Expand Vintage (yrs)", 1, 20, 1)
 min_fund_size = st.sidebar.number_input("Minimum Fund Size (USDm)", 0, 5000, 2)
 current_year = st.sidebar.number_input("Año Actual", 1990, 2030, 2025)
 
-asset_classes = sorted(df["ASSET CLASS"].dropna().unique())
+asset_classes = ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 selected_asset = st.sidebar.selectbox("Asset Class", ["Todos"] + asset_classes)
 
 gps = sorted(df["FUND MANAGER"].dropna().unique())
@@ -37,4 +54,5 @@ filtered = filtered[filtered["FUND SIZE (USD MN)"] >= min_fund_size]
 # --- Mostrar resultados ---
 st.subheader("Resultados del GP Seleccionado")
 st.dataframe(filtered)
+
 
