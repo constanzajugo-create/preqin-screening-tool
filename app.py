@@ -54,7 +54,7 @@ def clean_year(x):
         return np.nan
 
 # --------------------------------------------------------
-# LOAD DATA
+# LOAD DATA FUNCTIONS
 # --------------------------------------------------------
 @st.cache_data
 def load_data():
@@ -64,6 +64,15 @@ def load_data():
     return df
 
 df = load_data()
+
+# --------------------------------------------------------
+# FORMAT FUNCTIONS
+# --------------------------------------------------------
+
+def format_multiple(x, decimals=2):
+    if pd.isna(x):
+        return ""
+    return f"{x:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".") + "x"
 
 # --------------------------------------------------------
 # NORMALIZE ASSET CLASS
@@ -269,7 +278,7 @@ for col in df_funds_fmt.columns:
     if "IRR" in col or "Score" in col:
         df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
     elif col in ["TVPI", "DPI"] or "Q" in col:
-        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_multiple(x, 2))
     elif df_funds_fmt[col].dtype in ["float64", "int64"]:
         df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 0))
 
@@ -362,6 +371,7 @@ ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
 st.pyplot(fig)
+
 
 
 
