@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
 # --------------------------------------------------------
 # STYLE
@@ -43,57 +45,62 @@ tbody tr:nth-child(even) { background-color: #f9f9f9; }
 st.title("Screening Tool")
 
 # --------------------------------------------------------
-# CLEANING FUNCTIONS
+# UTILS
 # --------------------------------------------------------
 def clean_year(x):
     try:
         x = str(x)
-        digits = "".join(ch for ch in x if ch.isdigit())
-        return int(digits) if len(digits) == 4 else np.nan
+        d = "".join(c for c in x if c.isdigit())
+        return int(d) if len(d) == 4 else np.nan
     except:
         return np.nan
-
-# --------------------------------------------------------
-# LOAD DATA FUNCTIONS
-# --------------------------------------------------------
-@st.cache_data
-def load_data():
-    df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
-    df["VINTAGE / INCEPTION YEAR"] = df["VINTAGE / INCEPTION YEAR"].apply(clean_year)
-    df["GPScore"] = pd.to_numeric(df["GPScore"], errors="coerce").fillna(0)
-    return df
-
-df = load_data()
-
-# --------------------------------------------------------
-# FORMAT FUNCTIONS
-# --------------------------------------------------------
-
-def format_multiple(x, decimals=2):
-    if pd.isna(x):
-        return ""
-    return f"{x:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".") + "x"
-
-# --------------------------------------------------------
-# NORMALIZE ASSET CLASS
-# --------------------------------------------------------
-def normalize_asset(x):
-    x = str(x).lower().strip()
-    if "debt" in x: return "Private Debt"
-    if "equity" in x: return "Private Equity"
-    if "infra" in x: return "Infrastructure"
-    if "real" in x: return "Real Estate"
-    return "Other"
 
 def format_es(x, decimals=2):
     if pd.isna(x):
         return ""
     return f"{x:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+def format_multiple(x, decimals=2):
+    if pd.isna(x):
+        return ""
+    return format_es(x, decimals) + "x"
+
+# --------------------------------------------------------
+# LOAD DATA
+# --------------------------------------------------------
+@st.cache_data
+def load_data():
+    df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
+    df["VINTAGE / INCEPTION YEAR"] = df["VINTAGE / INCEPTION YEAR"].apply(clean_year)
+
+    numeric_cols = [
+        "GPScore", "FundScore",
+        "Score Q1", "Score Q2", "Score Q3", "Score Q4",
+        "NET MULTIPLE (X)", "NET IRR (%)", "DPI (%)"
+    ]
+    for c in numeric_cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+
+    return df
+
+df = load_data()
+
+# --------------------------------------------------------
+# ASSET CLASS NORMALIZATION
+# --------------------------------------------------------
+def normalize_asset(x):
+    x = str(x).lower()
+    if "debt" in x: return "Private Debt"
+    if "equity" in x: return "Private Equity"
+    if "infra" in x: return "Infrastructure"
+    if "real" in x: return "Real Estate"
+    return "Other"
+
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
 # --------------------------------------------------------
-# SIDEBAR FILTERS (TODOS RESTAURADOS)
+# SIDEBAR
 # --------------------------------------------------------
 st.sidebar.header("Filtros")
 
@@ -102,31 +109,15 @@ selected_asset = st.sidebar.selectbox(
     ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 )
 
-# Base sin filtro de tamaño
-if selected_asset != "Todos":
-    df_asset = df[df["ASSET CLASS"] == selected_asset].copy()
-else:
-    df_asset = df.copy()
-
-gps_list = sorted(df_asset["FUND MANAGER"].dropna().unique())
-selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_list)
+df_asset = df if selected_asset == "Todos" else df[df["ASSET CLASS"] == selected_asset]
+gps = sorted(df_asset["FUND MANAGER"].dropna().unique())
+selected_gp = st.sidebar.selectbox("Seleccionar GP", gps)
 
 # --------------------------------------------------------
-# DATASETS SEPARADOS POR PROPÓSITO
-# --------------------------------------------------------
-
-# Screening (afecta score y ranking)
-
-df_screening = df_asset.copy()
-
-# Fondos completos (histórico)
-df_funds_all = df_asset.copy()
-
-# --------------------------------------------------------
-# GP-LEVEL RANKING (CORRECTO)
+# GP RANKING
 # --------------------------------------------------------
 df_gp_rank = (
-    df_screening
+    df_asset
     .groupby("FUND MANAGER", as_index=False)
     .agg({
         "GPScore": "max",
@@ -137,28 +128,17 @@ df_gp_rank = (
     })
 )
 
-df_gp_rank["Rank"] = (
-    df_gp_rank["GPScore"]
-    .rank(method="min", ascending=False)
-    .astype(int)
-)
-
+df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(ascending=False, method="min").astype(int)
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
 total_gps = len(df_gp_rank)
 
 # --------------------------------------------------------
-# SELECTED GP SUMMARY (SCREENING VIEW)
+# GP SUMMARY
 # --------------------------------------------------------
-gp_rows_screening = df_screening[df_screening["FUND MANAGER"] == selected_gp]
+gp_df = df_asset[df_asset["FUND MANAGER"] == selected_gp]
 
-if not gp_rows_screening.empty:
-
-    gp_rank = int(
-        df_gp_rank.loc[
-            df_gp_rank["FUND MANAGER"] == selected_gp,
-            "Rank"
-        ].iloc[0]
-    )
+if not gp_df.empty:
+    gp_rank = int(df_gp_rank.loc[df_gp_rank["FUND MANAGER"] == selected_gp, "Rank"].iloc[0])
 
     st.markdown(f"""
     <div class="highlight" style="padding:12px; width:95%; margin:auto;">
@@ -166,356 +146,115 @@ if not gp_rows_screening.empty:
     </div>
     """, unsafe_allow_html=True)
 
-    # Metrics
-    num_funds = len(gp_rows_screening)
-    last_vintage = gp_rows_screening["VINTAGE / INCEPTION YEAR"].max()
-
-    if gp_rows_screening["VINTAGE / INCEPTION YEAR"].notna().any():
-        idx = gp_rows_screening["VINTAGE / INCEPTION YEAR"].idxmax()
-        last_fund_size = gp_rows_screening.loc[idx, "FUND SIZE (USD MN)"]
-    else:
-        last_fund_size = 0
-
-    total_aum_considered = gp_rows_screening["FUND SIZE (USD MN)"].sum()
-    gp_total_aum = gp_rows_screening["FUND MANAGER TOTAL AUM (USD MN)"].iloc[0]
-
-    asset_class = gp_rows_screening["ASSET CLASS"].iloc[0]
-    strategy = gp_rows_screening["STRATEGY"].iloc[0]
-    region = gp_rows_screening["PRIMARY REGION FOCUS"].iloc[0]
-    gp_score = f"{gp_rows_screening['GPScore'].iloc[0] * 100:.2f}%"
-
-    html_gp = f"""
-    <table>
-        <thead>
-            <tr>
-                <th>GP</th>
-                <th>Asset Class</th>
-                <th>Strategy</th>
-                <th>Region</th>
-                <th># Funds (Screening)</th>
-                <th>Last Vintage</th>
-                <th>Last Fund Size</th>
-                <th>Total AUM Considerado</th>
-                <th>GP Total AUM</th>
-                <th>Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="highlight">
-                <td>{selected_gp}</td>
-                <td>{asset_class}</td>
-                <td>{strategy}</td>
-                <td>{region}</td>
-                <td>{num_funds}</td>
-                <td>{"" if pd.isna(last_vintage) else int(last_vintage)}</td>
-                <td>{last_fund_size:,.0f}</td>
-                <td>{total_aum_considered:,.0f}</td>
-                <td>{gp_total_aum:,.0f}</td>
-                <td>{gp_score}</td>                
-            </tr>
-        </tbody>
-    </table>
-    """
-
-    st.markdown(html_gp, unsafe_allow_html=True)
-
 # --------------------------------------------------------
-# ALL GPS TABLE (SCREENING)
+# ALL GPs TABLE
 # --------------------------------------------------------
-st.subheader("Todos los GPs del Asset Class (ordenados por Score)")
+st.subheader("Todos los GPs")
 
 df_rank_display = df_gp_rank.copy()
+df_rank_display["Score (%)"] = df_rank_display["GPScore"] * 100
+df_rank_display.drop(columns=["GPScore"], inplace=True)
 
-# Crear Score en %
-df_rank_display["Score"] = df_rank_display["GPScore"] * 100
-df_rank_display = df_rank_display.drop(columns=["GPScore"])
-
-# FORMATO ES
-for col in df_rank_display.columns:
-    if col == "Score":
-        df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 2))
-    elif df_rank_display[col].dtype in ["float64", "int64"]:
-        df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 0))
+for c in df_rank_display.columns:
+    if "Score" in c:
+        df_rank_display[c] = df_rank_display[c].apply(lambda x: format_es(x, 2))
+    elif df_rank_display[c].dtype in ["float64", "int64"]:
+        df_rank_display[c] = df_rank_display[c].apply(lambda x: format_es(x, 0))
 
 st.dataframe(df_rank_display, use_container_width=True)
 
 # --------------------------------------------------------
-# FUNDS TABLE (FULL HISTORY – NO SIZE FILTER)
+# FUNDS TABLE
 # --------------------------------------------------------
 st.subheader(f"Fondos del GP: {selected_gp}")
 
-df_funds = df_funds_all[df_funds_all["FUND MANAGER"] == selected_gp].copy()
-df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
+df_funds = df_asset[df_asset["FUND MANAGER"] == selected_gp].copy()
+df_funds.sort_values("VINTAGE / INCEPTION YEAR", inplace=True)
 
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
     "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
-    "Score Q4","Score Q3","Score Q2","Score Q1",
+    "Score Q1","Score Q2","Score Q3","Score Q4",
     "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
     "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
     "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
 ]
 
+df_funds = df_funds[[c for c in desired_cols if c in df_funds.columns]]
 
-available_cols = [c for c in desired_cols if c in df_funds.columns]
-df_funds_display = df_funds[available_cols].copy()
-
-df_funds_display = df_funds_display.rename(columns={
+df_funds.rename(columns={
     "NAME":"Fund Name",
     "NET MULTIPLE (X)":"TVPI",
-    "NET IRR (%)": "IRR (%)",
+    "NET IRR (%)":"IRR (%)",
     "DPI (%)":"DPI",
-    "FundScore":"Fund Score",
     "TVPI_p95":"TVPI Q4","TVPI_p75":"TVPI Q3","TVPI_p50":"TVPI Q2","TVPI_p25":"TVPI Q1",
     "IRR_p95":"IRR Q4","IRR_p75":"IRR Q3","IRR_p50":"IRR Q2","IRR_p25":"IRR Q1",
-    "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1","Score Q4": "Score Q4",
-    "Score Q3": "Score Q3", "Score Q2": "Score Q2","Score Q1": "Score Q1",
-})
+    "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1",
+    "FundScore":"Fund Score"
+}, inplace=True)
 
-if "Fund Score" in df_funds_display.columns:
-    df_funds_display["Fund Score"] *= 100
+df_funds_fmt = df_funds.copy()
 
-for q in ["Score Q1", "Score Q2", "Score Q3", "Score Q4"]:
-    if q in df_funds_display.columns:
-        df_funds_display[q] *= 100
-
-df_funds_fmt = df_funds_display.copy()
-
-for col in df_funds_fmt.columns:
-    if "IRR" in col or "Score" in col:
-        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
-    elif col in ["TVPI", "DPI"] or "Q" in col:
-        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_multiple(x, 2))
-    elif df_funds_fmt[col].dtype in ["float64", "int64"]:
-        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 0))
+for c in df_funds_fmt.columns:
+    if "IRR" in c or "Score" in c:
+        df_funds_fmt[c] = df_funds_fmt[c].apply(lambda x: format_es(x, 2))
+    elif "TVPI" in c or "DPI" in c:
+        df_funds_fmt[c] = df_funds_fmt[c].apply(lambda x: format_multiple(x, 2))
+    elif df_funds_fmt[c].dtype in ["float64", "int64"]:
+        df_funds_fmt[c] = df_funds_fmt[c].apply(lambda x: format_es(x, 0))
 
 st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import PercentFormatter
-
 # --------------------------------------------------------
-# GRÁFICOS (Performance, TVPI, IRR, DPI)
+# COLORS
 # --------------------------------------------------------
-
 COLORS = {
-    "Q1": "#1f4e79",   # azul oscuro
-    "Q2": "#5b9bd5",   # azul claro
-    "Q3": "#d9d9d9",   # gris
-    "Q4": "#ffc000"    # amarillo
+    "Q1": "#1f4e79",
+    "Q2": "#5b9bd5",
+    "Q3": "#d9d9d9",
+    "Q4": "#ffc000"
 }
 
-# Creamos la figura general con 4 subgráficos
-#TVPI:
-fig, ax = plt.subplots(figsize=(30, 8))
+# --------------------------------------------------------
+# GENERIC STACKED PLOT FUNCTION
+# --------------------------------------------------------
+def stacked_plot(df, value_cols, real_col, title, ylabel, is_percent=False, suffix=""):
+    fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1", color=COLORS["Q1"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q2"],
-       bottom=df_funds_display["TVPI Q1"], label="Q2", color=COLORS["Q2"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3", color=COLORS["Q3"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", color=COLORS["Q4"])
+    bottom = np.zeros(len(df))
+    for q in ["Q1","Q2","Q3","Q4"]:
+        ax.bar(df["Fund Name"], df[f"{value_cols} {q}"],
+               bottom=bottom, label=q, color=COLORS[q])
+        bottom += df[f"{value_cols} {q}"].fillna(0)
 
-# Valor real del fondo
-ax.scatter(
-    df_funds_display["Fund Name"],
-    df_funds_display["TVPI"],
-    color="red",
-    s=220,
-    edgecolor="white",
-    linewidth=2,
-    zorder=15
-)
+    ax.scatter(df["Fund Name"], df[real_col],
+               color="red", s=260, edgecolor="white", linewidth=2, zorder=20)
 
-# Etiqueta del punto
-for x, y in zip(df_funds_display["Fund Name"], df_funds_display["TVPI"]):
-    if pd.notna(y):
-        ax.text(
-            x,
-            y + 0.15,
-            f"{y:.2f}x",
-            color="red",
-            fontsize=20,
-            ha="center",
-            va="bottom",
-            zorder=20
-        )
+    for x, y in zip(df["Fund Name"], df[real_col]):
+        if pd.notna(y):
+            ax.text(x, y + (0.02 * y if y else 0.02),
+                    f"{y:.1f}{suffix}", color="red",
+                    fontsize=20, ha="center", va="bottom")
 
-ax.set_title("TVPI", fontsize=35)
-ax.set_xlabel("Fund Name", fontsize=28)
-ax.set_ylabel("TVPI", fontsize=28)
-ax.tick_params(axis="x", labelsize=22)
-ax.tick_params(axis="y", labelsize=22)
-ax.legend(fontsize=28)
+    ax.set_title(title, fontsize=35)
+    ax.set_ylabel(ylabel, fontsize=28)
+    ax.set_xlabel("Fund Name", fontsize=28)
+    ax.tick_params(axis="x", labelsize=22, rotation=45)
+    ax.tick_params(axis="y", labelsize=22)
 
-ax.set_xticklabels(
-    df_funds_display["Fund Name"],
-    rotation=45,
-    ha="right",
-    fontsize=22
-)
+    if is_percent:
+        ax.yaxis.set_major_formatter(PercentFormatter())
 
-plt.subplots_adjust(hspace=0.6)
-st.pyplot(fig)
+    ax.legend(fontsize=26)
+    st.pyplot(fig)
 
-#IRR:
-fig, ax = plt.subplots(figsize=(30, 8))
-
-ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q1"], label="Q1", color=COLORS["Q1"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q2"],
-       bottom=df_funds_display["IRR Q1"], label="Q2", color=COLORS["Q2"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q3"],
-       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"], label="Q3", color=COLORS["Q3"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q4"],
-       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"] + df_funds_display["IRR Q3"], label="Q4", color=COLORS["Q4"])
-
-ax.scatter(
-    df_funds_display["Fund Name"],
-    df_funds_display["IRR (%)"],
-    color="red",
-    s=220,
-    edgecolor="white",
-    linewidth=2,
-    zorder=15
-)
-
-for x, y in zip(df_funds_display["Fund Name"], df_funds_display["IRR (%)"]):
-    if pd.notna(y):
-        ax.text(
-            x,
-            y + 0.15,
-            f"{y:.2f}x",
-            color="red",
-            fontsize=20,
-            ha="center",
-            va="bottom",
-            zorder=20
-        )
-
-ax.set_title("IRR", fontsize=35)
-ax.set_xlabel("Fund Name", fontsize=28)
-ax.set_ylabel("IRR (%)", fontsize=28)
-ax.tick_params(axis="x", labelsize=22)
-ax.tick_params(axis="y", labelsize=22)
-ax.legend(fontsize=28)
-
-ax.set_xticklabels(
-    df_funds_display["Fund Name"],
-    rotation=45,
-    ha="right",
-    fontsize=22
-)
-
-plt.subplots_adjust(hspace=0.6)
-st.pyplot(fig)
-
-#DPI:
-fig, ax = plt.subplots(figsize=(30, 8))
-
-ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q1"], label="Q1", color=COLORS["Q1"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q2"],
-       bottom=df_funds_display["DPI Q1"], label="Q2", color=COLORS["Q2"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q3"],
-       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"], label="Q3", color=COLORS["Q3"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q4"],
-       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4", color=COLORS["Q4"])
-
-ax.scatter(
-    df_funds_display["Fund Name"],
-    df_funds_display["DPI"],
-    color="red",
-    s=220,
-    edgecolor="white",
-    linewidth=2,
-    zorder=15
-)
-
-for x, y in zip(df_funds_display["Fund Name"], df_funds_display["DPI"]):
-    if pd.notna(y):
-        ax.text(
-            x,
-            y + 0.15,
-            f"{y:.2f}x",
-            color="red",
-            fontsize=20,
-            ha="center",
-            va="bottom",
-            zorder=20
-        )
-
-ax.set_title("DPI", fontsize=35)
-ax.set_xlabel("Fund Name", fontsize=28)
-ax.set_ylabel("DPI", fontsize=28)
-ax.tick_params(axis="x", labelsize=22)
-ax.tick_params(axis="y", labelsize=22)
-ax.legend(fontsize=28)
-
-ax.set_xticklabels(
-    df_funds_display["Fund Name"],
-    rotation=45,
-    ha="right",
-    fontsize=22
-)
-
-plt.subplots_adjust(hspace=0.6)
-st.pyplot(fig)
-
-#Performance Score
-fig, ax = plt.subplots(figsize=(30, 8))
-
-ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q1"], label="Q1", color=COLORS["Q1"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q2"],
-       bottom=df_funds_display["Score Q1"], label="Q2", color=COLORS["Q2"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q3"],
-       bottom=df_funds_display["Score Q1"] + df_funds_display["Score Q2"], label="Q3", color=COLORS["Q3"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q4"],
-       bottom=df_funds_display["Score Q1"] + df_funds_display["Score Q2"] + df_funds_display["Score Q3"], label="Q4", color=COLORS["Q4"])
-
-ax.scatter(
-    df_funds_display["Fund Name"],
-    df_funds_display["Fund Score"],
-    color="red",
-    s=220,
-    edgecolor="white",
-    linewidth=2,
-    zorder=15
-)
-
-for x, y in zip(df_funds_display["Fund Name"], df_funds_display["Fund Score"]):
-    if pd.notna(y):
-        ax.text(
-            x,
-            y + 0.15,
-            f"{y:.2f}x",
-            color="red",
-            fontsize=20,
-            ha="center",
-            va="bottom",
-            zorder=20
-        )
-
-ax.set_title("Performance Score", fontsize=35)
-ax.set_xlabel("Fund Name", fontsize=28)
-ax.set_ylabel("Score", fontsize=28)
-ax.tick_params(axis="x", labelsize=22)
-ax.tick_params(axis="y", labelsize=22)
-ax.legend(fontsize=28)
-
-ax.set_xticklabels(
-    df_funds_display["Fund Name"],
-    rotation=45,
-    ha="right",
-    fontsize=22
-)
-
-plt.subplots_adjust(hspace=0.6)
-st.pyplot(fig)
-
-
-
-
-
+# --------------------------------------------------------
+# PLOTS
+# --------------------------------------------------------
+stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
+stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
+stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
+stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
 
 
 
