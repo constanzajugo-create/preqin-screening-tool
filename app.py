@@ -252,7 +252,7 @@ df_funds_display = df_funds[available_cols].copy()
 df_funds_display = df_funds_display.rename(columns={
     "NAME":"Fund Name",
     "NET MULTIPLE (X)":"TVPI",
-    "IRR": "IRR (%)",
+    "NET IRR (%)": "IRR (%)",
     "DPI (%)":"DPI",
     "FundScore":"Fund Score",
     "TVPI_p95":"TVPI Q4","TVPI_p75":"TVPI Q3","TVPI_p50":"TVPI Q2","TVPI_p25":"TVPI Q1",
@@ -362,6 +362,7 @@ ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
 st.pyplot(fig)
+
 
 
 
