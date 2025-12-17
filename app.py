@@ -467,7 +467,7 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
 
 ax.scatter(
     df_funds_display["Fund Name"],
-    df_funds_display["Score"],
+    df_funds_display["Fund Score"],
     color="red",
     s=220,
     edgecolor="white",
@@ -504,6 +504,7 @@ ax.set_xticklabels(
 
 plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
