@@ -276,6 +276,16 @@ for col in df_funds_fmt.columns:
 st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
+
+plt.rcParams.update({
+    "axes.titlesize": 22,
+    "axes.labelsize": 18,
+    "xtick.labelsize": 14,
+    "ytick.labelsize": 14,
+    "legend.fontsize": 14,
+    "figure.titlesize": 24
+})
 
 # --------------------------------------------------------
 # GRÁFICOS (Performance, TVPI, IRR, DPI)
@@ -353,6 +363,7 @@ ax.set_ylabel("Score")
 ax.legend()
 
 st.pyplot(fig)
+
 
 
 
