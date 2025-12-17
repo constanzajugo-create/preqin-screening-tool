@@ -317,7 +317,6 @@ st.dataframe(styled_df, use_container_width=True)
 # GRÁFICOS
 # --------------------------------------------------------
 
-
 COLORS = {
     "Q1": "#1f4e79",
     "Q2": "#5b9bd5",
@@ -325,17 +324,13 @@ COLORS = {
     "Q4": "#ffc000"
 }
 
+# Crear alturas "reales" por tramo (igual Excel)
 for base in ["TVPI", "IRR", "DPI", "Score"]:
     df_funds_display[f"{base} Q1_h"] = df_funds_display[f"{base} Q1"]
-    df_funds_display[f"{base} Q2_h"] = (
-        df_funds_display[f"{base} Q2"] - df_funds_display[f"{base} Q1"]
-    )
-    df_funds_display[f"{base} Q3_h"] = (
-        df_funds_display[f"{base} Q3"] - df_funds_display[f"{base} Q2"]
-    )
-    df_funds_display[f"{base} Q4_h"] = (
-        df_funds_display[f"{base} Q4"] - df_funds_display[f"{base} Q3"]
-    )
+    df_funds_display[f"{base} Q2_h"] = df_funds_display[f"{base} Q2"] - df_funds_display[f"{base} Q1"]
+    df_funds_display[f"{base} Q3_h"] = df_funds_display[f"{base} Q3"] - df_funds_display[f"{base} Q2"]
+    df_funds_display[f"{base} Q4_h"] = df_funds_display[f"{base} Q4"] - df_funds_display[f"{base} Q3"]
+
 
 def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     fig, ax = plt.subplots(figsize=(35, 16))
@@ -375,7 +370,7 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
         label="Q4"
     )
 
-    # Punto rojo (valor real del fondo)
+    # Punto rojo (valor real)
     ax.scatter(
         df_funds_display["Fund Name"],
         df_funds_display[real_col],
@@ -386,7 +381,7 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
         zorder=20
     )
 
-    # Etiquetas del punto
+    # Etiquetas punto rojo
     offset = 2 if is_percent else 0.15
     for x, y in zip(df_funds_display["Fund Name"], df_funds_display[real_col]):
         if pd.notna(y):
@@ -396,9 +391,13 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
                 color="red",
                 fontsize=20,
                 ha="center",
-                va="bottom",
-                zorder=25
+                va="bottom"
             )
+
+    # 🔥 CLAVE: NO partir desde 0 (igual Excel)
+    ymin = df_funds_display[f"{base} Q1"].min() * 0.95
+    ymax = df_funds_display[f"{base} Q4"].max() * 1.05
+    ax.set_ylim(ymin, ymax)
 
     ax.set_title(title, fontsize=35)
     ax.set_xlabel("Fund Name", fontsize=28)
@@ -413,10 +412,13 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     st.pyplot(fig)
 
 
+# ----------- LLAMADAS -----------
+
 stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
