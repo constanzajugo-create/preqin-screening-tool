@@ -317,6 +317,7 @@ st.dataframe(styled_df, use_container_width=True)
 # GRÁFICOS
 # --------------------------------------------------------
 
+
 COLORS = {
     "Q1": "#1f4e79",
     "Q2": "#5b9bd5",
@@ -324,21 +325,57 @@ COLORS = {
     "Q4": "#ffc000"
 }
 
+for base in ["TVPI", "IRR", "DPI", "Score"]:
+    df_funds_display[f"{base} Q1_h"] = df_funds_display[f"{base} Q1"]
+    df_funds_display[f"{base} Q2_h"] = (
+        df_funds_display[f"{base} Q2"] - df_funds_display[f"{base} Q1"]
+    )
+    df_funds_display[f"{base} Q3_h"] = (
+        df_funds_display[f"{base} Q3"] - df_funds_display[f"{base} Q2"]
+    )
+    df_funds_display[f"{base} Q4_h"] = (
+        df_funds_display[f"{base} Q4"] - df_funds_display[f"{base} Q3"]
+    )
 
 def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     fig, ax = plt.subplots(figsize=(35, 16))
-    bottom = np.zeros(len(df_funds_display))
 
-    for q in ["Q1","Q2","Q3","Q4"]:
-        ax.bar(
-            df_funds_display["Fund Name"],
-            df_funds_display[f"{base} {q}"],
-            bottom=bottom,
-            label=q,
-            color=COLORS[q]
-        )
-        bottom += df_funds_display[f"{base} {q}"].fillna(0)
+    # Q1
+    ax.bar(
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q1_h"],
+        color=COLORS["Q1"],
+        label="Q1"
+    )
 
+    # Q2
+    ax.bar(
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q2_h"],
+        bottom=df_funds_display[f"{base} Q1"],
+        color=COLORS["Q2"],
+        label="Q2"
+    )
+
+    # Q3
+    ax.bar(
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q3_h"],
+        bottom=df_funds_display[f"{base} Q2"],
+        color=COLORS["Q3"],
+        label="Q3"
+    )
+
+    # Q4
+    ax.bar(
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q4_h"],
+        bottom=df_funds_display[f"{base} Q3"],
+        color=COLORS["Q4"],
+        label="Q4"
+    )
+
+    # Punto rojo (valor real del fondo)
     ax.scatter(
         df_funds_display["Fund Name"],
         df_funds_display[real_col],
@@ -346,15 +383,22 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
         s=220,
         edgecolor="white",
         linewidth=2,
-        zorder=15
+        zorder=20
     )
 
+    # Etiquetas del punto
     offset = 2 if is_percent else 0.15
     for x, y in zip(df_funds_display["Fund Name"], df_funds_display[real_col]):
         if pd.notna(y):
-            ax.text(x, y + offset, f"{y:.2f}{suffix}",
-                    color="red", fontsize=20,
-                    ha="center", va="bottom")
+            ax.text(
+                x, y + offset,
+                f"{y:.2f}{suffix}",
+                color="red",
+                fontsize=20,
+                ha="center",
+                va="bottom",
+                zorder=25
+            )
 
     ax.set_title(title, fontsize=35)
     ax.set_xlabel("Fund Name", fontsize=28)
@@ -368,10 +412,12 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     ax.legend(fontsize=28)
     st.pyplot(fig)
 
+
 stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
