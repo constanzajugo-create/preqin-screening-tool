@@ -293,7 +293,7 @@ COLORS = {
 }
 
 def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
-    fig, ax = plt.subplots(figsize=(30, 16))
+    fig, ax = plt.subplots(figsize=(35, 16))
     bottom = np.zeros(len(df_funds_display))
 
     for q in ["Q1","Q2","Q3","Q4"]:
@@ -339,5 +339,6 @@ stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
