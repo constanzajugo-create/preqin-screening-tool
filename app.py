@@ -71,7 +71,6 @@ def format_multiple(x, decimals=2):
 @st.cache_data
 def load_data():
     df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
-
     df["VINTAGE / INCEPTION YEAR"] = df["VINTAGE / INCEPTION YEAR"].apply(clean_year)
 
     numeric_cols = [
@@ -79,7 +78,6 @@ def load_data():
         "Score Q1", "Score Q2", "Score Q3", "Score Q4",
         "NET MULTIPLE (X)", "NET IRR (%)", "DPI (%)"
     ]
-
     for c in numeric_cols:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
@@ -112,15 +110,14 @@ selected_asset = st.sidebar.selectbox(
 )
 
 df_asset = df if selected_asset == "Todos" else df[df["ASSET CLASS"] == selected_asset]
-
 gps = sorted(df_asset["FUND MANAGER"].dropna().unique())
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps)
 
 # --------------------------------------------------------
-# GP RANKING (SOLO PARA RANK)
+# GP RANKING
 # --------------------------------------------------------
 df_gp_rank = (
-    df_asset[df_asset["GPScore"].notna()]
+    df_asset
     .groupby("FUND MANAGER", as_index=False)
     .agg({
         "GPScore": "max",
@@ -131,29 +128,21 @@ df_gp_rank = (
     })
 )
 
-df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(ascending=False, method="min")
+df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(ascending=False, method="min").astype(int)
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
-
 total_gps = len(df_gp_rank)
 
 # --------------------------------------------------------
-# GP SUMMARY (BLOQUE VERDE)
+# GP SUMMARY
 # --------------------------------------------------------
-gp_row = df_gp_rank[df_gp_rank["FUND MANAGER"] == selected_gp]
+gp_df = df_asset[df_asset["FUND MANAGER"] == selected_gp]
 
-if not gp_row.empty:
-    rank = int(gp_row["Rank"].values[0])
-    score = gp_row["GPScore"].values[0] * 100
+if not gp_df.empty:
+    gp_rank = int(df_gp_rank.loc[df_gp_rank["FUND MANAGER"] == selected_gp, "Rank"].iloc[0])
 
     st.markdown(f"""
-    <div class="highlight" style="padding:14px; width:95%; margin:auto;">
-        <h3>{selected_gp} — {rank} de {total_gps} — Score {score:.2f}%</h3>
-    </div>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown(f"""
-    <div class="highlight" style="padding:14px; width:95%; margin:auto;">
-        <h3>{selected_gp} — Sin score disponible</h3>
+    <div class="highlight" style="padding:12px; width:95%; margin:auto;">
+    <h3>{selected_gp} — {gp_rank} de {total_gps}</h3>
     </div>
     """, unsafe_allow_html=True)
 
@@ -204,10 +193,6 @@ df_funds.rename(columns={
     "FundScore":"Fund Score"
 }, inplace=True)
 
-for c in ["Fund Score","Score Q1","Score Q2","Score Q3","Score Q4"]:
-    if c in df_funds.columns:
-        df_funds[c] = df_funds[c] * 100
-
 df_funds_fmt = df_funds.copy()
 
 for c in df_funds_fmt.columns:
@@ -219,4 +204,55 @@ for c in df_funds_fmt.columns:
         df_funds_fmt[c] = df_funds_fmt[c].apply(lambda x: format_es(x, 0))
 
 st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
+
+# --------------------------------------------------------
+# COLORS
+# --------------------------------------------------------
+COLORS = {
+    "Q1": "#1f4e79",
+    "Q2": "#5b9bd5",
+    "Q3": "#d9d9d9",
+    "Q4": "#ffc000"
+}
+
+# --------------------------------------------------------
+# GENERIC STACKED PLOT FUNCTION
+# --------------------------------------------------------
+def stacked_plot(df, value_cols, real_col, title, ylabel, is_percent=False, suffix=""):
+    fig, ax = plt.subplots(figsize=(30, 8))
+
+    bottom = np.zeros(len(df))
+    for q in ["Q1","Q2","Q3","Q4"]:
+        ax.bar(df["Fund Name"], df[f"{value_cols} {q}"],
+               bottom=bottom, label=q, color=COLORS[q])
+        bottom += df[f"{value_cols} {q}"].fillna(0)
+
+    ax.scatter(df["Fund Name"], df[real_col],
+               color="red", s=260, edgecolor="white", linewidth=2, zorder=20)
+
+    for x, y in zip(df["Fund Name"], df[real_col]):
+        if pd.notna(y):
+            ax.text(x, y + (0.02 * y if y else 0.02),
+                    f"{y:.1f}{suffix}", color="red",
+                    fontsize=20, ha="center", va="bottom")
+
+    ax.set_title(title, fontsize=35)
+    ax.set_ylabel(ylabel, fontsize=28)
+    ax.set_xlabel("Fund Name", fontsize=28)
+    ax.tick_params(axis="x", labelsize=22, rotation=45)
+    ax.tick_params(axis="y", labelsize=22)
+
+    if is_percent:
+        ax.yaxis.set_major_formatter(PercentFormatter())
+
+    ax.legend(fontsize=26)
+    st.pyplot(fig)
+
+# --------------------------------------------------------
+# PLOTS
+# --------------------------------------------------------
+stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
+stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
+stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
+stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
 
