@@ -71,6 +71,7 @@ def format_multiple(x, decimals=2):
 @st.cache_data
 def load_data():
     df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
+
     df["VINTAGE / INCEPTION YEAR"] = df["VINTAGE / INCEPTION YEAR"].apply(clean_year)
 
     numeric_cols = [
@@ -78,6 +79,7 @@ def load_data():
         "Score Q1", "Score Q2", "Score Q3", "Score Q4",
         "NET MULTIPLE (X)", "NET IRR (%)", "DPI (%)"
     ]
+
     for c in numeric_cols:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
@@ -110,6 +112,7 @@ selected_asset = st.sidebar.selectbox(
 )
 
 df_asset = df if selected_asset == "Todos" else df[df["ASSET CLASS"] == selected_asset]
+
 gps = sorted(df_asset["FUND MANAGER"].dropna().unique())
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps)
 
@@ -128,8 +131,10 @@ df_gp_rank = (
     })
 )
 
+df_gp_rank = df_gp_rank[df_gp_rank["GPScore"].notna()].copy()
 df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(ascending=False, method="min").astype(int)
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
+
 total_gps = len(df_gp_rank)
 
 # --------------------------------------------------------
@@ -193,10 +198,10 @@ df_funds.rename(columns={
     "FundScore":"Fund Score"
 }, inplace=True)
 
-# --- SCORE QUARTILES A % ---
-for q in ["Score Q1", "Score Q2", "Score Q3", "Score Q4", "Fund Score"]:
-    if q in df_funds.columns:
-        df_funds[q] = pd.to_numeric(df_funds[q], errors="coerce") * 100
+# --- Score a porcentaje (solo para tabla) ---
+for c in ["Fund Score","Score Q1","Score Q2","Score Q3","Score Q4"]:
+    if c in df_funds.columns:
+        df_funds[c] = pd.to_numeric(df_funds[c], errors="coerce") * 100
 
 df_funds_fmt = df_funds.copy()
 
@@ -221,25 +226,28 @@ COLORS = {
 }
 
 # --------------------------------------------------------
-# GENERIC STACKED PLOT FUNCTION
+# STACKED PLOT FUNCTION
 # --------------------------------------------------------
-def stacked_plot(df, value_cols, real_col, title, ylabel, is_percent=False, suffix=""):
+def stacked_plot(df, base, real_col, title, ylabel, is_percent=False, suffix=""):
     fig, ax = plt.subplots(figsize=(30, 8))
 
     bottom = np.zeros(len(df))
     for q in ["Q1","Q2","Q3","Q4"]:
-        ax.bar(df["Fund Name"], df[f"{value_cols} {q}"],
-               bottom=bottom, label=q, color=COLORS[q])
-        bottom += df[f"{value_cols} {q}"].fillna(0)
+        col = f"{base} Q{q[-1]}"
+        ax.bar(df["Fund Name"], df[col], bottom=bottom, color=COLORS[q], label=q)
+        bottom += df[col].fillna(0)
 
-    ax.scatter(df["Fund Name"], df[real_col],
-               color="red", s=260, edgecolor="white", linewidth=2, zorder=20)
+    ax.scatter(
+        df["Fund Name"], df[real_col],
+        color="red", s=260, edgecolor="white", linewidth=2, zorder=20
+    )
 
+    offset = 2 if is_percent else 0.15
     for x, y in zip(df["Fund Name"], df[real_col]):
         if pd.notna(y):
-            ax.text(x, y + (0.02 * y if y else 0.02),
-                    f"{y:.1f}{suffix}", color="red",
-                    fontsize=20, ha="center", va="bottom")
+            ax.text(x, y + offset, f"{y:.1f}{suffix}",
+                    color="red", fontsize=20,
+                    ha="center", va="bottom", zorder=25)
 
     ax.set_title(title, fontsize=35)
     ax.set_ylabel(ylabel, fontsize=28)
@@ -260,14 +268,6 @@ stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
-
-
-
-
-
-
-
-
 
 
 
