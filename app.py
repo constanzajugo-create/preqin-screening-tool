@@ -475,7 +475,7 @@ ax.scatter(
     zorder=15
 )
 
-for x, y in zip(df_funds_display["Fund Name"], df_funds_display["Performance Score"]):
+for x, y in zip(df_funds_display["Fund Name"], df_funds_display["Fund Score"]):
     if pd.notna(y):
         ax.text(
             x,
@@ -504,6 +504,7 @@ ax.set_xticklabels(
 
 plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
