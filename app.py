@@ -193,6 +193,11 @@ df_funds.rename(columns={
     "FundScore":"Fund Score"
 }, inplace=True)
 
+# --- SCORE QUARTILES A % ---
+for q in ["Score Q1", "Score Q2", "Score Q3", "Score Q4", "Fund Score"]:
+    if q in df_funds.columns:
+        df_funds[q] = pd.to_numeric(df_funds[q], errors="coerce") * 100
+
 df_funds_fmt = df_funds.copy()
 
 for c in df_funds_fmt.columns:
@@ -255,6 +260,7 @@ stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
