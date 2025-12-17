@@ -315,20 +315,24 @@ ax.scatter(
     df_funds_display["Fund Name"],
     df_funds_display["TVPI"],
     color="red",
-    s=120,
-    zorder=10
+    s=220,
+    edgecolor="white",
+    linewidth=2,
+    zorder=15
 )
 
 # Etiqueta del punto
 for x, y in zip(df_funds_display["Fund Name"], df_funds_display["TVPI"]):
     if pd.notna(y):
         ax.text(
-            x, y,
+            x,
+            y + 0.15,
             f"{y:.2f}x",
             color="red",
-            fontsize=18,
+            fontsize=20,
             ha="center",
-            va="bottom"
+            va="bottom",
+            zorder=20
         )
 
 ax.set_title("TVPI", fontsize=35)
@@ -363,19 +367,23 @@ ax.scatter(
     df_funds_display["Fund Name"],
     df_funds_display["IRR (%)"],
     color="red",
-    s=120,
-    zorder=10
+    s=220,
+    edgecolor="white",
+    linewidth=2,
+    zorder=15
 )
 
 for x, y in zip(df_funds_display["Fund Name"], df_funds_display["IRR (%)"]):
     if pd.notna(y):
         ax.text(
-            x, y,
-            f"{y:.1f}%",
+            x,
+            y + 0.15,
+            f"{y:.2f}x",
             color="red",
-            fontsize=18,
+            fontsize=20,
             ha="center",
-            va="bottom"
+            va="bottom",
+            zorder=20
         )
 
 ax.set_title("IRR", fontsize=35)
@@ -410,19 +418,23 @@ ax.scatter(
     df_funds_display["Fund Name"],
     df_funds_display["DPI"],
     color="red",
-    s=120,
-    zorder=10
+    s=220,
+    edgecolor="white",
+    linewidth=2,
+    zorder=15
 )
 
 for x, y in zip(df_funds_display["Fund Name"], df_funds_display["DPI"]):
     if pd.notna(y):
         ax.text(
-            x, y,
-            f"{y:.0f}%",
+            x,
+            y + 0.15,
+            f"{y:.2f}x",
             color="red",
-            fontsize=18,
+            fontsize=20,
             ha="center",
-            va="bottom"
+            va="bottom",
+            zorder=20
         )
 
 ax.set_title("DPI", fontsize=35)
@@ -453,6 +465,29 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
        bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", color=COLORS["Q4"])
 
+ax.scatter(
+    df_funds_display["Fund Name"],
+    df_funds_display["Performance Score"],
+    color="red",
+    s=220,
+    edgecolor="white",
+    linewidth=2,
+    zorder=15
+)
+
+for x, y in zip(df_funds_display["Fund Name"], df_funds_display["Performance Score"]):
+    if pd.notna(y):
+        ax.text(
+            x,
+            y + 0.15,
+            f"{y:.2f}x",
+            color="red",
+            fontsize=20,
+            ha="center",
+            va="bottom",
+            zorder=20
+        )
+
 ax.set_title("Performance Score", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
 ax.set_ylabel("Score", fontsize=28)
@@ -469,6 +504,7 @@ ax.set_xticklabels(
 
 plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
