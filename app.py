@@ -317,6 +317,8 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q4"],
 ax.set_title("IRR", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
 ax.set_ylabel("IRR (%)", fontsize=28)
+ax.tick_params(axis="x", labelsize=22)
+ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
 st.pyplot(fig)
@@ -335,6 +337,8 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q4"],
 ax.set_title("DPI", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
 ax.set_ylabel("DPI", fontsize=28)
+ax.tick_params(axis="x", labelsize=22)
+ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
 st.pyplot(fig)
@@ -353,9 +357,12 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
 ax.set_title("Performance Score", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
 ax.set_ylabel("Score", fontsize=28)
+ax.tick_params(axis="x", labelsize=22)
+ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
 st.pyplot(fig)
+
 
 
 
