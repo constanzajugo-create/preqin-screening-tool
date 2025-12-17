@@ -219,5 +219,4 @@ for c in df_funds_fmt.columns:
         df_funds_fmt[c] = df_funds_fmt[c].apply(lambda x: format_es(x, 0))
 
 st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
-"%")
 
