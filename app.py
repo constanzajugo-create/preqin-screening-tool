@@ -295,9 +295,9 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
        bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
 ax.set_title("TVPI", fontsize=35)
-ax.set_xlabel("Fund Name", fontsize=20)
-ax.set_ylabel("TVPI", fontsize=20)
-ax.legend(fontsize=16)
+ax.set_xlabel("Fund Name", fontsize=30)
+ax.set_ylabel("TVPI", fontsize=30)
+ax.legend(fontsize=30)
 
 st.pyplot(fig)
 
@@ -354,6 +354,7 @@ ax.set_ylabel("Score")
 ax.legend()
 
 st.pyplot(fig)
+
 
 
 
