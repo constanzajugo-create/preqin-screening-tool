@@ -327,40 +327,43 @@ COLORS = {
 def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     fig, ax = plt.subplots(figsize=(35, 16))
 
-    # BASE: Q4
-    b_q4 = ax.bar(
+    # Q4 (abajo)
+    ax.bar(
         df_funds_display["Fund Name"],
-        df_funds_display[f"{base} Q4"],
+        df_funds_display[f"{base}_b_Q4"],
         color=COLORS["Q4"],
         label="Q4"
     )
 
     # Q3
-    b_q3 = ax.bar(
+    ax.bar(
         df_funds_display["Fund Name"],
-        df_funds_display[f"{base} Q3"],
-        bottom=df_funds_display[f"{base} Q4"],
+        df_funds_display[f"{base}_b_Q3"],
+        bottom=df_funds_display[f"{base}_b_Q4"],
         color=COLORS["Q3"],
         label="Q3"
     )
 
     # Q2
-    b_q2 = ax.bar(
+    ax.bar(
         df_funds_display["Fund Name"],
-        df_funds_display[f"{base} Q2"],
-        bottom=df_funds_display[f"{base} Q4"] + df_funds_display[f"{base} Q3"],
+        df_funds_display[f"{base}_b_Q2"],
+        bottom=(
+            df_funds_display[f"{base}_b_Q4"] +
+            df_funds_display[f"{base}_b_Q3"]
+        ),
         color=COLORS["Q2"],
         label="Q2"
     )
 
-    # TOP: Q1
-    b_q1 = ax.bar(
+    # Q1 (arriba)
+    ax.bar(
         df_funds_display["Fund Name"],
-        df_funds_display[f"{base} Q1"],
+        df_funds_display[f"{base}_b_Q1"],
         bottom=(
-            df_funds_display[f"{base} Q4"] +
-            df_funds_display[f"{base} Q3"] +
-            df_funds_display[f"{base} Q2"]
+            df_funds_display[f"{base}_b_Q4"] +
+            df_funds_display[f"{base}_b_Q3"] +
+            df_funds_display[f"{base}_b_Q2"]
         ),
         color=COLORS["Q1"],
         label="Q1"
@@ -398,20 +401,14 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     if is_percent:
         ax.yaxis.set_major_formatter(PercentFormatter())
 
-    # LEYENDA ORDENADA COMO EXCEL
     ax.legend(
-        handles=[b_q1, b_q2, b_q3, b_q4],
         labels=["Q1", "Q2", "Q3", "Q4"],
         fontsize=28
     )
 
     st.pyplot(fig)
 
-# ---- LLAMADAS ----
-stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
-stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
-stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
-stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
