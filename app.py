@@ -316,6 +316,19 @@ st.dataframe(styled_df, use_container_width=True)
 # --------------------------------------------------------
 # GRÁFICOS
 # --------------------------------------------------------
+
+gp_score_value = (
+    df_gp_rank
+    .loc[df_gp_rank["FUND MANAGER"] == selected_gp, "GPScore"]
+    .values
+)
+
+gp_score_text = ""
+if len(gp_score_value) > 0 and not pd.isna(gp_score_value[0]):
+    gp_score_text = f"{gp_score_value[0] * 100:.2f}%"
+else:
+    gp_score_text = "N/A"
+ 
 COLORS = {
     "Q1": "#1f4e79",
     "Q2": "#5b9bd5",
@@ -355,7 +368,7 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
                     color="red", fontsize=20,
                     ha="center", va="bottom")
 
-    ax.set_title(title, fontsize=35)
+    ax.set_title(f"Performance Score — GP: {gp_score_text}", fontsize=35)
     ax.set_xlabel("Fund Name", fontsize=28)
     ax.set_ylabel(ylabel, fontsize=28)
     ax.tick_params(axis="x", labelsize=22, rotation=45)
@@ -371,6 +384,7 @@ stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
