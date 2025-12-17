@@ -317,6 +317,7 @@ ax.set_xticklabels(
     fontsize=22
 )
 
+plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
 
 #IRR:
@@ -344,6 +345,7 @@ ax.set_xticklabels(
     fontsize=22
 )
 
+plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
 
 #DPI:
@@ -371,6 +373,7 @@ ax.set_xticklabels(
     fontsize=22
 )
 
+plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
 
 #Performance Score
@@ -398,7 +401,9 @@ ax.set_xticklabels(
     fontsize=22
 )
 
+plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
