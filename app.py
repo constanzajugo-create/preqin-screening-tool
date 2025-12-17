@@ -230,11 +230,19 @@ for col in df_rank_display.columns:
     elif df_rank_display[col].dtype in ["float64", "int64"]:
         df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 0))
 
-st.dataframe(df_rank_display, use_container_width=True)
+st.dataframe(df_rank_display, use_container_width=True, hide_index=True)
 
 # --------------------------------------------------------
 # FUNDS TABLE
 # --------------------------------------------------------
+
+COLOR_GROUPS = {
+    "TVPI": "#e8f1fb",      # azul suave
+    "IRR": "#eaf7ea",       # verde suave
+    "DPI": "#fff2e6",       # naranjo suave
+    "Score": "#f3e8fb"      # morado suave
+}
+
 st.subheader(f"Fondos del GP: {selected_gp}")
 
 df_funds = df_funds_all[df_funds_all["FUND MANAGER"] == selected_gp].copy()
@@ -280,7 +288,30 @@ for col in df_funds_fmt.columns:
     elif df_funds_fmt[col].dtype in ["float64","int64"]:
         df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 0))
 
-st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
+def color_columns(df):
+    styles = pd.DataFrame("", index=df.index, columns=df.columns)
+
+    for col in df.columns:
+        if col.startswith("TVPI"):
+            styles[col] = f"background-color: {COLOR_GROUPS['TVPI']}"
+        elif col.startswith("IRR"):
+            styles[col] = f"background-color: {COLOR_GROUPS['IRR']}"
+        elif col.startswith("DPI"):
+            styles[col] = f"background-color: {COLOR_GROUPS['DPI']}"
+        elif "Score" in col:
+            styles[col] = f"background-color: {COLOR_GROUPS['Score']}"
+
+    return styles
+
+
+styled_df = (
+    df_funds_fmt
+    .style
+    .apply(color_columns, axis=None)
+)
+
+st.dataframe(styled_df, use_container_width=True)
+
 
 # --------------------------------------------------------
 # GRÁFICOS
@@ -291,6 +322,7 @@ COLORS = {
     "Q3": "#d9d9d9",
     "Q4": "#ffc000"
 }
+
 
 def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     fig, ax = plt.subplots(figsize=(35, 16))
@@ -339,6 +371,7 @@ stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
