@@ -422,3 +422,4 @@ stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent
 
 
 
+
