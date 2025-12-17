@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
-# --------------------------------------------------------
+# ========================================================
 # STYLE
-# --------------------------------------------------------
+# ========================================================
 st.markdown("""
 <style>
 h1, h2, h3 { text-align: center; }
@@ -44,13 +44,12 @@ tbody tr:nth-child(even) { background-color: #f9f9f9; }
 
 st.title("Screening Tool")
 
-# --------------------------------------------------------
+# ========================================================
 # UTILS
-# --------------------------------------------------------
+# ========================================================
 def clean_year(x):
     try:
-        x = str(x)
-        d = "".join(c for c in x if c.isdigit())
+        d = "".join(c for c in str(x) if c.isdigit())
         return int(d) if len(d) == 4 else np.nan
     except:
         return np.nan
@@ -65,9 +64,9 @@ def format_multiple(x, decimals=2):
         return ""
     return format_es(x, decimals) + "x"
 
-# --------------------------------------------------------
+# ========================================================
 # LOAD DATA
-# --------------------------------------------------------
+# ========================================================
 @st.cache_data
 def load_data():
     df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
@@ -88,9 +87,9 @@ def load_data():
 
 df = load_data()
 
-# --------------------------------------------------------
-# ASSET CLASS NORMALIZATION
-# --------------------------------------------------------
+# ========================================================
+# NORMALIZE ASSET CLASS
+# ========================================================
 def normalize_asset(x):
     x = str(x).lower()
     if "debt" in x: return "Private Debt"
@@ -101,9 +100,9 @@ def normalize_asset(x):
 
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
-# --------------------------------------------------------
+# ========================================================
 # SIDEBAR
-# --------------------------------------------------------
+# ========================================================
 st.sidebar.header("Filtros")
 
 selected_asset = st.sidebar.selectbox(
@@ -116,11 +115,17 @@ df_asset = df if selected_asset == "Todos" else df[df["ASSET CLASS"] == selected
 gps = sorted(df_asset["FUND MANAGER"].dropna().unique())
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps)
 
-# --------------------------------------------------------
-# GP RANKING  (⚠️ NO TOCAR df_asset)
-# --------------------------------------------------------
+# ========================================================
+# DATASETS SEPARADOS (CLAVE)
+# ========================================================
+df_screening = df_asset.copy()   # ranking GP
+df_funds_all = df_asset.copy()   # tablas y gráficos
+
+# ========================================================
+# GP RANKING (SOLO GPScore)
+# ========================================================
 df_gp_rank = (
-    df_asset[df_asset["GPScore"].notna()]
+    df_screening[df_screening["GPScore"].notna()]
     .groupby("FUND MANAGER", as_index=False)
     .agg({
         "GPScore": "max",
@@ -139,34 +144,24 @@ df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
 total_gps = len(df_gp_rank)
 
-# --------------------------------------------------------
-# GP SUMMARY  ✅ (TABLA VERDE)
-# --------------------------------------------------------
-gp_df = df_asset[df_asset["FUND MANAGER"] == selected_gp]
+# ========================================================
+# GP SUMMARY (TABLA VERDE — ARREGLADA)
+# ========================================================
+gp_row = df_gp_rank[df_gp_rank["FUND MANAGER"] == selected_gp]
 
-rank_row = df_gp_rank.loc[
-    df_gp_rank["FUND MANAGER"] == selected_gp,
-    "Rank"
-]
-
-if not gp_df.empty:
-
-    if not rank_row.empty:
-        gp_rank = int(rank_row.values[0])
-        gp_score = gp_df["GPScore"].max() * 100
-        rank_text = f"{gp_rank} de {total_gps} — Score {gp_score:.2f}%"
-    else:
-        rank_text = "Sin score (no comparable)"
+if not gp_row.empty:
+    gp_rank = int(gp_row["Rank"].values[0])
+    gp_score = gp_row["GPScore"].values[0] * 100
 
     st.markdown(f"""
-    <div class="highlight" style="padding:12px; width:95%; margin:auto;">
-        <h3>{selected_gp} — {rank_text}</h3>
+    <div class="highlight" style="padding:14px; width:95%; margin:auto;">
+        <h3>{selected_gp} — {gp_rank} de {total_gps} — Score {gp_score:.2f}%</h3>
     </div>
     """, unsafe_allow_html=True)
 
-# --------------------------------------------------------
+# ========================================================
 # ALL GPs TABLE
-# --------------------------------------------------------
+# ========================================================
 st.subheader("Todos los GPs")
 
 df_rank_display = df_gp_rank.copy()
@@ -181,12 +176,12 @@ for c in df_rank_display.columns:
 
 st.dataframe(df_rank_display, use_container_width=True)
 
-# --------------------------------------------------------
+# ========================================================
 # FUNDS TABLE
-# --------------------------------------------------------
+# ========================================================
 st.subheader(f"Fondos del GP: {selected_gp}")
 
-df_funds = df_asset[df_asset["FUND MANAGER"] == selected_gp].copy()
+df_funds = df_funds_all[df_funds_all["FUND MANAGER"] == selected_gp].copy()
 df_funds.sort_values("VINTAGE / INCEPTION YEAR", inplace=True)
 
 desired_cols = [
@@ -211,7 +206,7 @@ df_funds.rename(columns={
     "FundScore":"Fund Score"
 }, inplace=True)
 
-# Scores a %
+# Score a porcentaje (solo display)
 for c in ["Fund Score","Score Q1","Score Q2","Score Q3","Score Q4"]:
     if c in df_funds.columns:
         df_funds[c] = df_funds[c] * 100
@@ -228,9 +223,9 @@ for c in df_funds_fmt.columns:
 
 st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
 
-# --------------------------------------------------------
+# ========================================================
 # COLORS
-# --------------------------------------------------------
+# ========================================================
 COLORS = {
     "Q1": "#1f4e79",
     "Q2": "#5b9bd5",
@@ -238,16 +233,17 @@ COLORS = {
     "Q4": "#ffc000"
 }
 
-# --------------------------------------------------------
-# STACKED PLOT FUNCTION
-# --------------------------------------------------------
+# ========================================================
+# STACKED PLOT
+# ========================================================
 def stacked_plot(df, base, real_col, title, ylabel, is_percent=False, suffix=""):
-    fig, ax = plt.subplots(figsize=(30, 8))
+    fig, ax = plt.subplots(figsize=(34, 10))
 
     bottom = np.zeros(len(df))
     for q in ["Q1","Q2","Q3","Q4"]:
         col = f"{base} Q{q[-1]}"
-        ax.bar(df["Fund Name"], df[col], bottom=bottom, color=COLORS[q], label=q)
+        ax.bar(df["Fund Name"], df[col], bottom=bottom,
+               color=COLORS[q], label=q)
         bottom += df[col].fillna(0)
 
     ax.scatter(
@@ -272,42 +268,13 @@ def stacked_plot(df, base, real_col, title, ylabel, is_percent=False, suffix="")
         ax.yaxis.set_major_formatter(PercentFormatter())
 
     ax.legend(fontsize=26)
+    plt.tight_layout()
     st.pyplot(fig)
 
-# --------------------------------------------------------
+# ========================================================
 # PLOTS
-# --------------------------------------------------------
+# ========================================================
 stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
