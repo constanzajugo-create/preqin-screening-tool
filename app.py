@@ -294,7 +294,7 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
        bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
-ax.set_title("TVPI", fontsize=25)
+ax.set_title("TVPI", fontsize=30)
 ax.set_xlabel("Fund Name", fontsize=20)
 ax.set_ylabel("TVPI", fontsize=20)
 ax.legend(fontsize=16)
@@ -312,7 +312,7 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q3"],
 ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q4"],
        bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"] + df_funds_display["IRR Q3"], label="Q4")
 
-ax.set_title("IRR", fontsize=16)
+ax.set_title("IRR", fontsize=30)
 ax.set_xlabel("Fund Name")
 ax.set_ylabel("IRR (%)")
 ax.legend()
@@ -330,7 +330,7 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q3"],
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q4"],
        bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4")
 
-ax.set_title("DPI", fontsize=16)
+ax.set_title("DPI", fontsize=30)
 ax.set_xlabel("Fund Name")
 ax.set_ylabel("DPI")
 ax.legend()
@@ -348,12 +348,13 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
        bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
-ax.set_title("Performance Score", fontsize=16)
+ax.set_title("Performance Score", fontsize=30)
 ax.set_xlabel("Fund Name")
 ax.set_ylabel("Score")
 ax.legend()
 
 st.pyplot(fig)
+
 
 
 
