@@ -400,11 +400,11 @@ fig, ax = plt.subplots(figsize=(30, 8))
 
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q1"], label="Q1", color=COLORS["Q1"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q2"],
-       bottom=df_funds_display["DPI Q1"], label="Q2", colors=COLORS["Q2"])
+       bottom=df_funds_display["DPI Q1"], label="Q2", color=COLORS["Q2"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q3"],
-       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"], label="Q3", colors=COLORS["Q3"])
+       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"], label="Q3", color=COLORS["Q3"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q4"],
-       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4", colors=COLORS["Q4"])
+       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4", color=COLORS["Q4"])
 
 ax.scatter(
     df_funds_display["Fund Name"],
@@ -445,13 +445,13 @@ st.pyplot(fig)
 #Performance Score
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1", colors=COLORS["Q1"])
+ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1", color=COLORS["Q1"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q2"],
-       bottom=df_funds_display["TVPI Q1"], label="Q2", colors=COLORS["Q2"])
+       bottom=df_funds_display["TVPI Q1"], label="Q2", color=COLORS["Q2"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3", colors=COLORS["Q3"])
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3", color=COLORS["Q3"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", colors=COLORS["Q4"])
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", color=COLORS["Q4"])
 
 ax.set_title("Performance Score", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
@@ -469,6 +469,7 @@ ax.set_xticklabels(
 
 plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
