@@ -250,10 +250,12 @@ df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
     "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
+    "Score Q4","Score Q3","Score Q2","Score Q1",
     "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
     "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
     "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
 ]
+
 
 available_cols = [c for c in desired_cols if c in df_funds.columns]
 df_funds_display = df_funds[available_cols].copy()
@@ -266,11 +268,16 @@ df_funds_display = df_funds_display.rename(columns={
     "FundScore":"Fund Score",
     "TVPI_p95":"TVPI Q4","TVPI_p75":"TVPI Q3","TVPI_p50":"TVPI Q2","TVPI_p25":"TVPI Q1",
     "IRR_p95":"IRR Q4","IRR_p75":"IRR Q3","IRR_p50":"IRR Q2","IRR_p25":"IRR Q1",
-    "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1"
+    "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1","Score Q4": "Score Q4",
+    "Score Q3": "Score Q3", "Score Q2": "Score Q2","Score Q1": "Score Q1",
 })
 
 if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
+
+for q in ["Score Q1", "Score Q2", "Score Q3", "Score Q4"]:
+    if q in df_funds_display.columns:
+        df_funds_display[q] *= 100
 
 df_funds_fmt = df_funds_display.copy()
 
@@ -457,13 +464,13 @@ st.pyplot(fig)
 #Performance Score
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1", color=COLORS["Q1"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q2"],
-       bottom=df_funds_display["TVPI Q1"], label="Q2", color=COLORS["Q2"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3", color=COLORS["Q3"])
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", color=COLORS["Q4"])
+ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q1"], label="Q1", color=COLORS["Q1"])
+ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q2"],
+       bottom=df_funds_display["Score Q1"], label="Q2", color=COLORS["Q2"])
+ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q3"],
+       bottom=df_funds_display["Score Q1"] + df_funds_display["Score Q2"], label="Q3", color=COLORS["Q3"])
+ax.bar(df_funds_display["Fund Name"], df_funds_display["Score Q4"],
+       bottom=df_funds_display["Score Q1"] + df_funds_display["Score Q2"] + df_funds_display["Score Q3"], label="Q4", color=COLORS["Q4"])
 
 ax.scatter(
     df_funds_display["Fund Name"],
@@ -504,6 +511,7 @@ ax.set_xticklabels(
 
 plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
