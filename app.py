@@ -149,6 +149,7 @@ total_gps = len(df_gp_rank)
 gp_rows_screening = df_screening[df_screening["FUND MANAGER"] == selected_gp]
 
 if not gp_rows_screening.empty:
+
     gp_rank = int(
         df_gp_rank.loc[
             df_gp_rank["FUND MANAGER"] == selected_gp,
@@ -215,8 +216,127 @@ if not gp_rows_screening.empty:
     st.markdown(html_gp, unsafe_allow_html=True)
 
 # --------------------------------------------------------
-# (EL RESTO: TABLAS Y GRÁFICOS SIGUE IGUAL)
+# ALL GPs TABLE
 # --------------------------------------------------------
+st.subheader("Todos los GPs del Asset Class (ordenados por Score)")
 
+df_rank_display = df_gp_rank.copy()
+df_rank_display["Score"] = df_rank_display["GPScore"] * 100
+df_rank_display = df_rank_display.drop(columns=["GPScore"])
 
+for col in df_rank_display.columns:
+    if col == "Score":
+        df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 2))
+    elif df_rank_display[col].dtype in ["float64", "int64"]:
+        df_rank_display[col] = df_rank_display[col].apply(lambda x: format_es(x, 0))
+
+st.dataframe(df_rank_display, use_container_width=True)
+
+# --------------------------------------------------------
+# FUNDS TABLE
+# --------------------------------------------------------
+st.subheader(f"Fondos del GP: {selected_gp}")
+
+df_funds = df_funds_all[df_funds_all["FUND MANAGER"] == selected_gp].copy()
+df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
+
+desired_cols = [
+    "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
+    "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
+    "Score Q4","Score Q3","Score Q2","Score Q1",
+    "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
+    "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
+    "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
+]
+
+available_cols = [c for c in desired_cols if c in df_funds.columns]
+df_funds_display = df_funds[available_cols].copy()
+
+df_funds_display = df_funds_display.rename(columns={
+    "NAME":"Fund Name",
+    "NET MULTIPLE (X)":"TVPI",
+    "NET IRR (%)":"IRR (%)",
+    "DPI (%)":"DPI",
+    "FundScore":"Fund Score",
+    "TVPI_p95":"TVPI Q4","TVPI_p75":"TVPI Q3","TVPI_p50":"TVPI Q2","TVPI_p25":"TVPI Q1",
+    "IRR_p95":"IRR Q4","IRR_p75":"IRR Q3","IRR_p50":"IRR Q2","IRR_p25":"IRR Q1",
+    "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1",
+})
+
+if "Fund Score" in df_funds_display.columns:
+    df_funds_display["Fund Score"] *= 100
+
+for q in ["Score Q1","Score Q2","Score Q3","Score Q4"]:
+    if q in df_funds_display.columns:
+        df_funds_display[q] *= 100
+
+df_funds_fmt = df_funds_display.copy()
+
+for col in df_funds_fmt.columns:
+    if "IRR" in col or "Score" in col:
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
+    elif col in ["TVPI","DPI"] or "Q" in col:
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_multiple(x, 2))
+    elif df_funds_fmt[col].dtype in ["float64","int64"]:
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 0))
+
+st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
+
+# --------------------------------------------------------
+# GRÁFICOS
+# --------------------------------------------------------
+COLORS = {
+    "Q1": "#1f4e79",
+    "Q2": "#5b9bd5",
+    "Q3": "#d9d9d9",
+    "Q4": "#ffc000"
+}
+
+def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
+    fig, ax = plt.subplots(figsize=(30, 8))
+    bottom = np.zeros(len(df_funds_display))
+
+    for q in ["Q1","Q2","Q3","Q4"]:
+        ax.bar(
+            df_funds_display["Fund Name"],
+            df_funds_display[f"{base} {q}"],
+            bottom=bottom,
+            label=q,
+            color=COLORS[q]
+        )
+        bottom += df_funds_display[f"{base} {q}"].fillna(0)
+
+    ax.scatter(
+        df_funds_display["Fund Name"],
+        df_funds_display[real_col],
+        color="red",
+        s=220,
+        edgecolor="white",
+        linewidth=2,
+        zorder=15
+    )
+
+    offset = 2 if is_percent else 0.15
+    for x, y in zip(df_funds_display["Fund Name"], df_funds_display[real_col]):
+        if pd.notna(y):
+            ax.text(x, y + offset, f"{y:.2f}{suffix}",
+                    color="red", fontsize=20,
+                    ha="center", va="bottom")
+
+    ax.set_title(title, fontsize=35)
+    ax.set_xlabel("Fund Name", fontsize=28)
+    ax.set_ylabel(ylabel, fontsize=28)
+    ax.tick_params(axis="x", labelsize=22, rotation=45)
+    ax.tick_params(axis="y", labelsize=22)
+
+    if is_percent:
+        ax.yaxis.set_major_formatter(PercentFormatter())
+
+    ax.legend(fontsize=28)
+    st.pyplot(fig)
+
+stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
+stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
+stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
+stacked_plot("Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
 
