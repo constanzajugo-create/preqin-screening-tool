@@ -146,11 +146,21 @@ total_gps = len(df_gp_rank)
 gp_df = df_asset[df_asset["FUND MANAGER"] == selected_gp]
 
 if not gp_df.empty:
-    gp_rank = df_gp_rank.loc[df_gp_rank["FUND MANAGER"] == selected_gp, "Rank"].values[0]
+
+    rank_row = df_gp_rank.loc[
+        df_gp_rank["FUND MANAGER"] == selected_gp,
+        "Rank"
+    ]
+
+    if not rank_row.empty:
+        gp_rank = int(rank_row.iloc[0])
+        rank_text = f"{gp_rank} de {total_gps}"
+    else:
+        rank_text = "Sin score"
 
     st.markdown(f"""
     <div class="highlight" style="padding:12px; width:95%; margin:auto;">
-    <h3>{selected_gp} — {gp_rank} de {total_gps}</h3>
+    <h3>{selected_gp} — {rank_text}</h3>
     </div>
     """, unsafe_allow_html=True)
 
@@ -271,6 +281,7 @@ stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
