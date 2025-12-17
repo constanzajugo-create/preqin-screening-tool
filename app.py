@@ -240,7 +240,7 @@ df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
-    "NET MULTIPLE (X)","IRR","DPI (%)","FundScore",
+    "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
     "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
     "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
     "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
@@ -362,6 +362,7 @@ ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
 st.pyplot(fig)
+
 
 
 
