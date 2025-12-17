@@ -117,13 +117,10 @@ gps = sorted(df_asset["FUND MANAGER"].dropna().unique())
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps)
 
 # --------------------------------------------------------
-# GP RANKING
+# GP RANKING  (⚠️ NO TOCAR df_asset)
 # --------------------------------------------------------
-
-df_asset = df_asset[df_asset["GPScore"].notna()].copy()
- 
 df_gp_rank = (
-    df_asset
+    df_asset[df_asset["GPScore"].notna()]
     .groupby("FUND MANAGER", as_index=False)
     .agg({
         "GPScore": "max",
@@ -134,33 +131,36 @@ df_gp_rank = (
     })
 )
 
-df_gp_rank = df_gp_rank[df_gp_rank["GPScore"].notna()].copy()
-df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(ascending=False, method="min")
-df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
+df_gp_rank["Rank"] = df_gp_rank["GPScore"].rank(
+    ascending=False,
+    method="min"
+)
 
+df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
 total_gps = len(df_gp_rank)
 
 # --------------------------------------------------------
-# GP SUMMARY
+# GP SUMMARY  ✅ (TABLA VERDE)
 # --------------------------------------------------------
 gp_df = df_asset[df_asset["FUND MANAGER"] == selected_gp]
 
+rank_row = df_gp_rank.loc[
+    df_gp_rank["FUND MANAGER"] == selected_gp,
+    "Rank"
+]
+
 if not gp_df.empty:
 
-    rank_row = df_gp_rank.loc[
-        df_gp_rank["FUND MANAGER"] == selected_gp,
-        "Rank"
-    ]
-
     if not rank_row.empty:
-        gp_rank = int(rank_row.iloc[0])
-        rank_text = f"{gp_rank} de {total_gps}"
+        gp_rank = int(rank_row.values[0])
+        gp_score = gp_df["GPScore"].max() * 100
+        rank_text = f"{gp_rank} de {total_gps} — Score {gp_score:.2f}%"
     else:
-        rank_text = "Sin score"
+        rank_text = "Sin score (no comparable)"
 
     st.markdown(f"""
     <div class="highlight" style="padding:12px; width:95%; margin:auto;">
-    <h3>{selected_gp} — {rank_text}</h3>
+        <h3>{selected_gp} — {rank_text}</h3>
     </div>
     """, unsafe_allow_html=True)
 
@@ -211,10 +211,10 @@ df_funds.rename(columns={
     "FundScore":"Fund Score"
 }, inplace=True)
 
-# --- Score a porcentaje (solo para tabla) ---
+# Scores a %
 for c in ["Fund Score","Score Q1","Score Q2","Score Q3","Score Q4"]:
     if c in df_funds.columns:
-        df_funds[c] = pd.to_numeric(df_funds[c], errors="coerce") * 100
+        df_funds[c] = df_funds[c] * 100
 
 df_funds_fmt = df_funds.copy()
 
@@ -260,7 +260,7 @@ def stacked_plot(df, base, real_col, title, ylabel, is_percent=False, suffix="")
         if pd.notna(y):
             ax.text(x, y + offset, f"{y:.1f}{suffix}",
                     color="red", fontsize=20,
-                    ha="center", va="bottom", zorder=25)
+                    ha="center", va="bottom")
 
     ax.set_title(title, fontsize=35)
     ax.set_ylabel(ylabel, fontsize=28)
@@ -281,9 +281,6 @@ stacked_plot(df_funds, "TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
 stacked_plot(df_funds, "IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
 stacked_plot(df_funds, "DPI", "DPI", "DPI", "DPI", suffix="x")
 stacked_plot(df_funds, "Score", "Fund Score", "Performance Score", "Score (%)", is_percent=True, suffix="%")
-
-
-
 
 
 
