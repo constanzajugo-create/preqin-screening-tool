@@ -278,15 +278,6 @@ st.dataframe(df_funds_fmt, use_container_width=True, hide_index=True)
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
-plt.rcParams.update({
-    "axes.titlesize": 22,
-    "axes.labelsize": 18,
-    "xtick.labelsize": 14,
-    "ytick.labelsize": 14,
-    "legend.fontsize": 14,
-    "figure.titlesize": 24
-})
-
 # --------------------------------------------------------
 # GRÁFICOS (Performance, TVPI, IRR, DPI)
 # --------------------------------------------------------
@@ -303,10 +294,10 @@ ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
        bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
 
-ax.set_title("TVPI", fontsize=16)
-ax.set_xlabel("Fund Name")
-ax.set_ylabel("TVPI")
-ax.legend()
+ax.set_title("TVPI", fontsize=25)
+ax.set_xlabel("Fund Name", fontsize=20)
+ax.set_ylabel("TVPI", fontsize=20)
+ax.legend(fontsize=16)
 
 st.pyplot(fig)
 
@@ -363,6 +354,7 @@ ax.set_ylabel("Score")
 ax.legend()
 
 st.pyplot(fig)
+
 
 
 
