@@ -291,17 +291,45 @@ from matplotlib.ticker import PercentFormatter
 # GRÁFICOS (Performance, TVPI, IRR, DPI)
 # --------------------------------------------------------
 
+COLORS = {
+    "Q1": "#1f4e79",   # azul oscuro
+    "Q2": "#5b9bd5",   # azul claro
+    "Q3": "#d9d9d9",   # gris
+    "Q4": "#ffc000"    # amarillo
+}
+
 # Creamos la figura general con 4 subgráficos
 #TVPI:
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1")
+ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1", color=COLORS["Q1"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q2"],
-       bottom=df_funds_display["TVPI Q1"], label="Q2")
+       bottom=df_funds_display["TVPI Q1"], label="Q2", color=COLORS["Q2"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3")
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3", color=COLORS["Q3"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", color=COLORS["Q4"])
+
+# Valor real del fondo
+ax.scatter(
+    df_funds_display["Fund Name"],
+    df_funds_display["TVPI"],
+    color="red",
+    s=120,
+    zorder=10
+)
+
+# Etiqueta del punto
+for x, y in zip(df_funds_display["Fund Name"], df_funds_display["TVPI"]):
+    if pd.notna(y):
+        ax.text(
+            x, y,
+            f"{y:.2f}x",
+            color="red",
+            fontsize=18,
+            ha="center",
+            va="bottom"
+        )
 
 ax.set_title("TVPI", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
@@ -323,13 +351,32 @@ st.pyplot(fig)
 #IRR:
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q1"], label="Q1")
+ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q1"], label="Q1", color=COLORS["Q1"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q2"],
-       bottom=df_funds_display["IRR Q1"], label="Q2")
+       bottom=df_funds_display["IRR Q1"], label="Q2", color=COLORS["Q2"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q3"],
-       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"], label="Q3")
+       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"], label="Q3", color=COLORS["Q3"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["IRR Q4"],
-       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"] + df_funds_display["IRR Q3"], label="Q4")
+       bottom=df_funds_display["IRR Q1"] + df_funds_display["IRR Q2"] + df_funds_display["IRR Q3"], label="Q4", color=COLORS["Q4"])
+
+ax.scatter(
+    df_funds_display["Fund Name"],
+    df_funds_display["IRR (%)"],
+    color="red",
+    s=120,
+    zorder=10
+)
+
+for x, y in zip(df_funds_display["Fund Name"], df_funds_display["IRR (%)"]):
+    if pd.notna(y):
+        ax.text(
+            x, y,
+            f"{y:.1f}%",
+            color="red",
+            fontsize=18,
+            ha="center",
+            va="bottom"
+        )
 
 ax.set_title("IRR", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
@@ -351,13 +398,32 @@ st.pyplot(fig)
 #DPI:
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q1"], label="Q1")
+ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q1"], label="Q1", color=COLORS["Q1"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q2"],
-       bottom=df_funds_display["DPI Q1"], label="Q2")
+       bottom=df_funds_display["DPI Q1"], label="Q2", colors=COLORS["Q2"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q3"],
-       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"], label="Q3")
+       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"], label="Q3", colors=COLORS["Q3"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["DPI Q4"],
-       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4")
+       bottom=df_funds_display["DPI Q1"] + df_funds_display["DPI Q2"] + df_funds_display["DPI Q3"], label="Q4", colors=COLORS["Q4"])
+
+ax.scatter(
+    df_funds_display["Fund Name"],
+    df_funds_display["DPI"],
+    color="red",
+    s=120,
+    zorder=10
+)
+
+for x, y in zip(df_funds_display["Fund Name"], df_funds_display["DPI"]):
+    if pd.notna(y):
+        ax.text(
+            x, y,
+            f"{y:.0f}%",
+            color="red",
+            fontsize=18,
+            ha="center",
+            va="bottom"
+        )
 
 ax.set_title("DPI", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
@@ -379,13 +445,13 @@ st.pyplot(fig)
 #Performance Score
 fig, ax = plt.subplots(figsize=(30, 8))
 
-ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1")
+ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q1"], label="Q1", colors=COLORS["Q1"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q2"],
-       bottom=df_funds_display["TVPI Q1"], label="Q2")
+       bottom=df_funds_display["TVPI Q1"], label="Q2", colors=COLORS["Q2"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q3"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3")
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"], label="Q3", colors=COLORS["Q3"])
 ax.bar(df_funds_display["Fund Name"], df_funds_display["TVPI Q4"],
-       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4")
+       bottom=df_funds_display["TVPI Q1"] + df_funds_display["TVPI Q2"] + df_funds_display["TVPI Q3"], label="Q4", colors=COLORS["Q4"])
 
 ax.set_title("Performance Score", fontsize=35)
 ax.set_xlabel("Fund Name", fontsize=28)
@@ -403,6 +469,7 @@ ax.set_xticklabels(
 
 plt.subplots_adjust(hspace=0.6)
 st.pyplot(fig)
+
 
 
 
