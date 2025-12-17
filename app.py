@@ -337,6 +337,13 @@ ax.tick_params(axis="x", labelsize=22)
 ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
+ax.set_xticklabels(
+    df_funds_display["Fund Name"],
+    rotation=45,
+    ha="right",
+    fontsize=22
+)
+
 st.pyplot(fig)
 
 #DPI:
@@ -356,6 +363,13 @@ ax.set_ylabel("DPI", fontsize=28)
 ax.tick_params(axis="x", labelsize=22)
 ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
+
+ax.set_xticklabels(
+    df_funds_display["Fund Name"],
+    rotation=45,
+    ha="right",
+    fontsize=22
+)
 
 st.pyplot(fig)
 
@@ -377,7 +391,15 @@ ax.tick_params(axis="x", labelsize=22)
 ax.tick_params(axis="y", labelsize=22)
 ax.legend(fontsize=28)
 
+ax.set_xticklabels(
+    df_funds_display["Fund Name"],
+    rotation=45,
+    ha="right",
+    fontsize=22
+)
+
 st.pyplot(fig)
+
 
 
 
