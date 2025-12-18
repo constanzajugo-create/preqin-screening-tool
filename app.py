@@ -150,7 +150,7 @@ df_gp_rank = (
 df_gp_rank["Rank"] = (
     df_gp_rank["GPScore"]
     .rank(method="min", ascending=False)
-    .astype(int)
+    .astype("Int64")
 )
 
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
@@ -413,5 +413,6 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
