@@ -163,12 +163,13 @@ gp_rows_screening = df_screening[df_screening["FUND MANAGER"] == selected_gp]
 
 if not gp_rows_screening.empty:
 
-    gp_rank = int(
-        df_gp_rank.loc[
-            df_gp_rank["FUND MANAGER"] == selected_gp,
-            "Rank"
-        ].iloc[0]
-    )
+    rank_value = df_gp_rank.loc[
+        df_gp_rank["FUND MANAGER"] == selected_gp,
+        "Rank"
+    ].iloc[0]
+    
+    gp_rank = "" if pd.isna(rank_value) else int(rank_value)
+
 
     st.markdown(f"""
     <div class="highlight" style="padding:12px; width:95%; margin:auto;">
@@ -413,6 +414,7 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
