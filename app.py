@@ -62,12 +62,25 @@ def clean_year(x):
 # --------------------------------------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("DB_FINAL_WITH_SCORES.csv")
+    df = pd.read_csv(
+        "DB_FINAL_WITH_SCORES.csv",
+        sep=";",
+        decimal=",",
+        encoding="utf-8-sig"
+    )
     df["VINTAGE / INCEPTION YEAR"] = df["VINTAGE / INCEPTION YEAR"].apply(clean_year)
     df["GPScore"] = pd.to_numeric(df["GPScore"], errors="coerce").fillna(0)
     return df
 
 df = load_data()
+
+df = pd.read_csv(
+    "DB_FINAL_WITH_SCORES.csv",
+    sep=";",
+    decimal=",",
+    encoding="utf-8-sig"
+)
+
 
 # --------------------------------------------------------
 # FORMAT FUNCTIONS
@@ -400,4 +413,5 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
