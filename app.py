@@ -324,97 +324,76 @@ COLORS = {
     "Q4": "#ffc000"   # amarillo
 }
 
-# --------------------------------------------------------
-# CONSTRUIR BANDAS (CLAVE)
-# --------------------------------------------------------
-
-for base in ["TVPI", "IRR", "DPI", "Score"]:
-    df_funds_display[f"{base}_b_Q4"] = df_funds_display[f"{base} Q4"]
-    df_funds_display[f"{base}_b_Q3"] = (
-        df_funds_display[f"{base} Q3"] - df_funds_display[f"{base} Q4"]
-    )
-    df_funds_display[f"{base}_b_Q2"] = (
-        df_funds_display[f"{base} Q2"] - df_funds_display[f"{base} Q3"]
-    )
-    df_funds_display[f"{base}_b_Q1"] = (
-        df_funds_display[f"{base} Q1"] - df_funds_display[f"{base} Q2"]
-    )
-
-# --------------------------------------------------------
-# FUNCIÓN DE PLOTEO
-# --------------------------------------------------------
-
 def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     fig, ax = plt.subplots(figsize=(35, 16))
 
-    x = df_funds_display["Fund Name"]
-
-    # Q4 (base)
+    # --- Q4 (base) ---
     ax.bar(
-        x,
-        df_funds_display[f"{base}_b_Q4"],
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q4"],
         color=COLORS["Q4"],
         label="Q4"
     )
 
-    # Q3
+    # --- Q3 ---
     ax.bar(
-        x,
-        df_funds_display[f"{base}_b_Q3"],
-        bottom=df_funds_display[f"{base}_b_Q4"],
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q3"],
+        bottom=df_funds_display[f"{base} Q4"],
         color=COLORS["Q3"],
         label="Q3"
     )
 
-    # Q2
+    # --- Q2 ---
     ax.bar(
-        x,
-        df_funds_display[f"{base}_b_Q2"],
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q2"],
         bottom=(
-            df_funds_display[f"{base}_b_Q4"] +
-            df_funds_display[f"{base}_b_Q3"]
+            df_funds_display[f"{base} Q4"] +
+            df_funds_display[f"{base} Q3"]
         ),
         color=COLORS["Q2"],
         label="Q2"
     )
 
-    # Q1 (top)
+    # --- Q1 (top) ---
     ax.bar(
-        x,
-        df_funds_display[f"{base}_b_Q1"],
+        df_funds_display["Fund Name"],
+        df_funds_display[f"{base} Q1"],
         bottom=(
-            df_funds_display[f"{base}_b_Q4"] +
-            df_funds_display[f"{base}_b_Q3"] +
-            df_funds_display[f"{base}_b_Q2"]
+            df_funds_display[f"{base} Q4"] +
+            df_funds_display[f"{base} Q3"] +
+            df_funds_display[f"{base} Q2"]
         ),
         color=COLORS["Q1"],
         label="Q1"
     )
 
-    # Punto rojo (valor real)
+    # --- Punto rojo (valor real del fondo) ---
     ax.scatter(
-        x,
+        df_funds_display["Fund Name"],
         df_funds_display[real_col],
         color="red",
         s=220,
         edgecolor="white",
         linewidth=2,
-        zorder=10
+        zorder=20
     )
 
-    # Etiqueta del punto
+    # --- Etiqueta del punto ---
     offset = 2 if is_percent else 0.15
-    for xi, yi in zip(x, df_funds_display[real_col]):
-        if pd.notna(yi):
+    for x, y in zip(df_funds_display["Fund Name"], df_funds_display[real_col]):
+        if pd.notna(y):
             ax.text(
-                xi,
-                yi + offset,
-                f"{yi:.2f}{suffix}",
+                x, y + offset,
+                f"{y:.2f}{suffix}",
                 color="red",
                 fontsize=20,
-                ha="center"
+                ha="center",
+                va="bottom"
             )
 
+    # --- Estética ---
     ax.set_title(title, fontsize=35)
     ax.set_xlabel("Fund Name", fontsize=28)
     ax.set_ylabel(ylabel, fontsize=28)
@@ -424,17 +403,8 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     if is_percent:
         ax.yaxis.set_major_formatter(PercentFormatter())
 
-    # Leyenda EXACTA como Excel
-    ax.legend(
-        handles=[
-            plt.Rectangle((0,0),1,1,color=COLORS["Q1"]),
-            plt.Rectangle((0,0),1,1,color=COLORS["Q2"]),
-            plt.Rectangle((0,0),1,1,color=COLORS["Q3"]),
-            plt.Rectangle((0,0),1,1,color=COLORS["Q4"]),
-        ],
-        labels=["Q1", "Q2", "Q3", "Q4"],
-        fontsize=28
-    )
+    # Leyenda en orden Excel
+    ax.legend(["Q1", "Q2", "Q3", "Q4"], fontsize=28)
 
     st.pyplot(fig)
 
@@ -446,20 +416,3 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
