@@ -363,10 +363,9 @@ df_funds_display = df_funds_display.rename(columns={
 if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
 
-score_cols = [c for c in df_funds_display.columns if c.startswith("Score")]
-
-for c in score_cols:
-    df_funds_display[c] = df_funds_display[c] * 100
+for c in ["Score Min", "Score Q1", "Score Q2", "Score Q3", "Score Q4"]:
+    if c in df_funds_display.columns:
+        df_funds_display[c] *= 100
 
 df_funds_fmt = df_funds_display.copy()
 
@@ -525,6 +524,7 @@ stacked_plot(
     suffix="%",
     custom_quantiles=SCORE_QUANTILE_MAP
 )
+
 
 
 
