@@ -183,7 +183,7 @@ if not gp_rows_screening.empty:
     
     explanation_text = (
         f"{warning_icon}Score explicado por "
-        f"<b>{num_with_data}</b> de <b>{total_funds}</b> fondos con datos completos"
+        f"<b>{num_explaining}</b> de <b>{total_funds}</b> fondos con datos completos"
     )
 
     st.markdown(f"""
@@ -434,6 +434,7 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
