@@ -108,6 +108,34 @@ def normalize_asset(x):
 
 df["ASSET CLASS"] = df["ASSET CLASS"].apply(normalize_asset)
 
+def build_layers_from_csv(df, metric):
+    """
+    metric: 'TVPI', 'IRR', 'DPI', 'Score'
+    """
+    if metric == "Score":
+        qmin, q1, q2, q3, q4 = (
+            "Score_Min", "Score_Q1", "Score_Q2", "Score_Q3", "Score_Max"
+        )
+    else:
+        qmin, q1, q2, q3, q4 = (
+            f"{metric}_min",
+            f"{metric}_p25",
+            f"{metric}_p50",
+            f"{metric}_p75",
+            f"{metric}_p95",
+        )
+
+    layers = pd.DataFrame(index=df.index)
+
+    layers["base"] = df[qmin]
+    layers["Q1"] = df[q1] - df[qmin]
+    layers["Q2"] = df[q2] - df[q1]
+    layers["Q3"] = df[q3] - df[q2]
+    layers["Q4"] = df[q4] - df[q3]
+
+    return layers.fillna(0)
+
+
 # --------------------------------------------------------
 # SIDEBAR FILTERS
 # --------------------------------------------------------
@@ -506,16 +534,83 @@ def stacked_plot(
     plt.tight_layout()
     st.pyplot(fig)
 
+def stacked_plot_excel(
+    metric,
+    real_col,
+    title,
+    ylabel,
+    is_percent=False,
+    suffix=""
+):
+    fig, ax = plt.subplots(figsize=(35, 16))
+    x = df_funds_display["Fund Name"]
+
+    layers = build_layers_from_csv(df_funds_display, metric)
+    bottom = np.zeros(len(layers))
+
+    order = ["base", "Q1", "Q2", "Q3", "Q4"]
+    colors = {
+        "base": "#0b2c4d",  # base oscura
+        "Q1": COLORS["Q1"],
+        "Q2": COLORS["Q2"],
+        "Q3": COLORS["Q3"],
+        "Q4": COLORS["Q4"],
+    }
+
+    for k in order:
+        ax.bar(
+            x,
+            layers[k],
+            bottom=bottom,
+            color=colors[k],
+            label=k
+        )
+        bottom += layers[k]
+
+    # Punto rojo (valor real)
+    ax.scatter(
+        x,
+        df_funds_display[real_col],
+        color="red",
+        s=220,
+        edgecolor="white",
+        linewidth=2,
+        zorder=20
+    )
+
+    offset = 2 if is_percent else 0.15
+    for xi, yi in zip(x, df_funds_display[real_col]):
+        if not np.isnan(yi):
+            ax.text(
+                xi,
+                yi + offset,
+                f"{yi:.2f}{suffix}",
+                color="red",
+                fontsize=20,
+                ha="center"
+            )
+
+    ax.set_title(title, fontsize=35)
+    ax.set_ylabel(ylabel, fontsize=28)
+    ax.set_xlabel("Fund Name", fontsize=28)
+
+    if is_percent:
+        ax.yaxis.set_major_formatter(PercentFormatter())
+
+    ax.legend(fontsize=24)
+    plt.tight_layout()
+    st.pyplot(fig)
+
 
 # --------------------------------------------------------
 # LLAMADAS
 # --------------------------------------------------------
 
-stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
-stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
-stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
+stacked_plot_excel("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
+stacked_plot_excel("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
+stacked_plot_excel("DPI", "DPI", "DPI", "DPI", suffix="x")
 
-stacked_plot(
+stacked_plot_excel(
     base="Score",
     real_col="Fund Score",
     title="Performance Score",
@@ -524,6 +619,7 @@ stacked_plot(
     suffix="%",
     custom_quantiles=SCORE_QUANTILE_MAP
 )
+
 
 
 
