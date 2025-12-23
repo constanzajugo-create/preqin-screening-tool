@@ -303,7 +303,7 @@ df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
     "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
-    "Score_Q4","Score_Q3","Score_Q2","Score_Q1",
+    "Score Q4","Score Q3","Score Q2","Score Q1",
     "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
     "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
     "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
@@ -380,15 +380,41 @@ COLORS = {
     "Q4": "#ffc000"   # amarillo
 }
 
-def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
-    fig, ax = plt.subplots(figsize=(35, 16))
+SCORE_QUANTILE_MAP = {
+    "Q1": "Score_Q1",
+    "Q2": "Score_Q2",
+    "Q3": "Score_Q3",
+    "Q4": "Score_Max"
+}
 
+def stacked_plot(
+    base,
+    real_col,
+    title,
+    ylabel,
+    is_percent=False,
+    suffix="",
+    custom_quantiles=None
+):
+    fig, ax = plt.subplots(figsize=(35, 16))
     x = df_funds_display["Fund Name"]
+
     bottom = np.zeros(len(df_funds_display))
 
-    # ORDEN EXACTO COMO EXCEL (abajo → arriba)
+    # ===============================
+    # BARRAS APILADAS
+    # ===============================
     for q in ["Q4", "Q3", "Q2", "Q1"]:
-        values = df_funds_display[f"{base} {q}"].fillna(0)
+
+        if custom_quantiles:
+            col = custom_quantiles.get(q)
+        else:
+            col = f"{base} {q}"
+
+        if col not in df_funds_display.columns:
+            continue
+
+        values = df_funds_display[col].fillna(0)
 
         ax.bar(
             x,
@@ -400,7 +426,9 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
 
         bottom += values
 
-    # Punto rojo (valor real del fondo)
+    # ===============================
+    # PUNTO ROJO
+    # ===============================
     ax.scatter(
         x,
         df_funds_display[real_col],
@@ -411,7 +439,6 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
         zorder=20
     )
 
-    # Etiquetas del punto
     offset = 2 if is_percent else 0.15
     for xi, yi in zip(x, df_funds_display[real_col]):
         if not np.isnan(yi):
@@ -428,11 +455,14 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
     ax.set_title(title, fontsize=35)
     ax.set_xlabel("Fund Name", fontsize=28)
     ax.set_ylabel(ylabel, fontsize=28)
-    ax.tick_params(axis="x", labelsize=22, rotation=45)
-    ax.tick_params(axis="y", labelsize=22)
 
     if is_percent:
         ax.yaxis.set_major_formatter(PercentFormatter())
+
+    ax.legend(fontsize=28)
+    plt.tight_layout()
+    st.pyplot(fig)
+
 
     # Leyenda igual a Excel
     ax.legend(
@@ -448,10 +478,21 @@ def stacked_plot(base, real_col, title, ylabel, is_percent=False, suffix=""):
 # LLAMADAS
 # --------------------------------------------------------
 
-stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x")
-stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
-stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
-stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+stacked_plot("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
+stacked_plot("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
+stacked_plot("DPI", "DPI", "DPI", "DPI", suffix="x")
+
+stacked_plot(
+    base="Score",
+    real_col="Fund Score",
+    title="Performance Score",
+    ylabel="Score (%)",
+    is_percent=True,
+    suffix="%",
+    custom_quantiles=SCORE_QUANTILE_MAP
+)
+
+
 
 
 
