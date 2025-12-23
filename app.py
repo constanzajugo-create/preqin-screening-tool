@@ -302,26 +302,63 @@ df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
+
+    # Valores reales
     "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
-    "Score Q4","Score Q3","Score Q2","Score Q1",
-    "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
-    "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
-    "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
+
+    # TVPI distribución
+    "TVPI_min","TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
+
+    # IRR distribución
+    "IRR_min","IRR_p95","IRR_p75","IRR_p50","IRR_p25",
+
+    # DPI distribución
+    "DPI_min","DPI_p95","DPI_p75","DPI_p50","DPI_p25",
+
+    # SCORE distribución
+    "Score_Min","Score_Max","Score_Q3","Score_Q2","Score_Q1"
 ]
+
 
 available_cols = [c for c in desired_cols if c in df_funds.columns]
 df_funds_display = df_funds[available_cols].copy()
 
 df_funds_display = df_funds_display.rename(columns={
-    "NAME":"Fund Name",
-    "NET MULTIPLE (X)":"TVPI",
-    "NET IRR (%)":"IRR (%)",
-    "DPI (%)":"DPI",
-    "FundScore":"Fund Score",
-    "TVPI_p95":"TVPI Q4","TVPI_p75":"TVPI Q3","TVPI_p50":"TVPI Q2","TVPI_p25":"TVPI Q1",
-    "IRR_p95":"IRR Q4","IRR_p75":"IRR Q3","IRR_p50":"IRR Q2","IRR_p25":"IRR Q1",
-    "DPI_p95":"DPI Q4","DPI_p75":"DPI Q3","DPI_p50":"DPI Q2","DPI_p25":"DPI Q1",
+    "NAME": "Fund Name",
+    "NET MULTIPLE (X)": "TVPI",
+    "NET IRR (%)": "IRR (%)",
+    "DPI (%)": "DPI",
+    "FundScore": "Score",
+
+    # TVPI
+    "TVPI_min": "TVPI Min",
+    "TVPI_p95": "TVPI Q4",
+    "TVPI_p75": "TVPI Q3",
+    "TVPI_p50": "TVPI Q2",
+    "TVPI_p25": "TVPI Q1",
+
+    # IRR
+    "IRR_min": "IRR Min",
+    "IRR_p95": "IRR Q4",
+    "IRR_p75": "IRR Q3",
+    "IRR_p50": "IRR Q2",
+    "IRR_p25": "IRR Q1",
+
+    # DPI
+    "DPI_min": "DPI Min",
+    "DPI_p95": "DPI Q4",
+    "DPI_p75": "DPI Q3",
+    "DPI_p50": "DPI Q2",
+    "DPI_p25": "DPI Q1",
+
+    # SCORE
+    "Score_Min": "Score Min",
+    "Score_Max": "Score Q4",
+    "Score_Q3": "Score Q3",
+    "Score_Q2": "Score Q2",
+    "Score_Q1": "Score Q1",
 })
+
 
 if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
@@ -481,6 +518,7 @@ stacked_plot(
     suffix="%",
     custom_quantiles=SCORE_QUANTILE_MAP
 )
+
 
 
 
