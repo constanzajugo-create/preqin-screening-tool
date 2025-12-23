@@ -363,17 +363,23 @@ df_funds_display = df_funds_display.rename(columns={
 if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
 
-for q in ["Score Q1","Score Q2","Score Q3","Score Q4"]:
+for q in ["Score Q1","Score Q2","Score Q3","Score Q4", "Score Min"]:
     if q in df_funds_display.columns:
         df_funds_display[q] *= 100
 
 df_funds_fmt = df_funds_display.copy()
 
 for col in df_funds_fmt.columns:
-    if "IRR" in col or "Score" in col:
-        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
-    elif col in ["TVPI","DPI"] or "Q" in col:
+
+    # TVPI y DPI → múltiplos
+    if col.startswith("TVPI") or col.startswith("DPI"):
         df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_multiple(x, 2))
+
+    # IRR y Score → porcentajes
+    elif col.startswith("IRR") or col.startswith("Score"):
+        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
+
+    # Tamaños → enteros
     elif df_funds_fmt[col].dtype in ["float64","int64"]:
         df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 0))
 
@@ -518,6 +524,7 @@ stacked_plot(
     suffix="%",
     custom_quantiles=SCORE_QUANTILE_MAP
 )
+
 
 
 
