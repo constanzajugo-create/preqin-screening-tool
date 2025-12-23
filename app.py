@@ -303,7 +303,7 @@ df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
     "NET MULTIPLE (X)","NET IRR (%)","DPI (%)","FundScore",
-    "Score Q4","Score Q3","Score Q2","Score Q1",
+    "Score_Q4","Score_Q3","Score_Q2","Score_Q1",
     "TVPI_p95","TVPI_p75","TVPI_p50","TVPI_p25",
     "IRR_p95","IRR_p75","IRR_p50","IRR_p25",
     "DPI_p95","DPI_p75","DPI_p50","DPI_p25"
@@ -452,6 +452,7 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
