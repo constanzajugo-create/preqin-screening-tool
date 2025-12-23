@@ -123,6 +123,25 @@ if selected_asset != "Todos":
 else:
     df_asset = df.copy()
 
+regions = sorted(
+    df_asset["PRIMARY REGION FOCUS"]
+    .dropna()
+    .unique()
+)
+
+regions = ["Todos"] + regions
+
+selected_region = st.sidebar.selectbox(
+    "Region",
+    regions
+)
+
+if selected_region != "Todos":
+    df_asset = df_asset[
+        df_asset["PRIMARY REGION FOCUS"] == selected_region
+    ].copy()
+
+
 gps_list = sorted(df_asset["FUND MANAGER"].dropna().unique())
 selected_gp = st.sidebar.selectbox("Seleccionar GP", gps_list)
 
@@ -154,7 +173,7 @@ df_gp_rank["Rank"] = (
 )
 
 df_gp_rank = df_gp_rank.sort_values("GPScore", ascending=False)
-total_gps = len(df_gp_rank)
+total_gps = df_gp_rank["FUND MANAGER"].nunique()
 
 # --------------------------------------------------------
 # SELECTED GP SUMMARY (TABLA VERDE)
@@ -194,7 +213,6 @@ if not gp_rows_screening.empty:
         </p>
     </div>
     """, unsafe_allow_html=True)
-
 
 
     num_funds = len(gp_rows_screening)
@@ -434,6 +452,7 @@ stacked_plot("TVPI",  "TVPI",        "TVPI",              "TVPI",      suffix="x
 stacked_plot("IRR",   "IRR (%)",     "IRR",               "IRR (%)",   is_percent=True, suffix="%")
 stacked_plot("DPI",   "DPI",          "DPI",               "DPI",       suffix="x")
 stacked_plot("Score", "Fund Score",   "Performance Score", "Score (%)", is_percent=True, suffix="%")
+
 
 
 
