@@ -464,16 +464,6 @@ def stacked_plot(
     st.pyplot(fig)
 
 
-    # Leyenda igual a Excel
-    ax.legend(
-        title=None,
-        fontsize=28
-    )
-
-    plt.tight_layout()
-    st.pyplot(fig)
-
-
 # --------------------------------------------------------
 # LLAMADAS
 # --------------------------------------------------------
@@ -491,6 +481,7 @@ stacked_plot(
     suffix="%",
     custom_quantiles=SCORE_QUANTILE_MAP
 )
+
 
 
 
