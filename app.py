@@ -701,8 +701,7 @@ stacked_plot_excel(
     "IRR",
     "NET IRR (%)",
     "IRR",
-    "IRR (%)",
-    is_percent=True
+    "IRR (%)"
 )
 
 stacked_plot_excel(
@@ -716,9 +715,9 @@ stacked_plot_excel(
     "Score",
     "FundScore",
     "Performance Score",
-    "Score (%)",
-    is_percent=True
+    "Score (%)"
 )
+
 
 
 
