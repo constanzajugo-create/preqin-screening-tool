@@ -387,6 +387,10 @@ df_funds_display = df_funds_display.rename(columns={
     "Score_Q1": "Score Q1",
 })
 
+# Score de 0–1 → porcentaje
+if "Score" in df_funds_display.columns:
+    df_funds_display["Score"] = df_funds_display["Score"] * 100
+
 
 if "Fund Score" in df_funds_display.columns:
     df_funds_display["Fund Score"] *= 100
@@ -405,7 +409,10 @@ for col in df_funds_fmt.columns:
 
     # IRR y Score → porcentajes
     elif col.startswith("IRR") or col.startswith("Score"):
-        df_funds_fmt[col] = df_funds_fmt[col].apply(lambda x: format_es(x, 2))
+        df_funds_fmt[col] = df_funds_fmt[col].apply(
+            lambda x: f"{format_es(x, 2)}%"
+        )
+
 
     # Tamaños → enteros
     elif df_funds_fmt[col].dtype in ["float64","int64"]:
@@ -618,6 +625,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
