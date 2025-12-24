@@ -616,18 +616,41 @@ def stacked_plot_excel(
 # LLAMADAS
 # --------------------------------------------------------
 
-stacked_plot_excel("TVPI", "TVPI", "TVPI", "TVPI", suffix="x")
-stacked_plot_excel("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="%")
-stacked_plot_excel("DPI", "DPI", "DPI", "DPI", suffix="x")
+stacked_plot_excel(
+    "TVPI",
+    "NET MULTIPLE (X)",
+    "TVPI",
+    "TVPI",
+    suffix="x"
+)
+
+stacked_plot_excel(
+    "IRR",
+    "NET IRR (%)",
+    "IRR",
+    "IRR (%)",
+    is_percent=True,
+    suffix="%"
+)
+
+stacked_plot_excel(
+    "DPI",
+    "DPI (%)",
+    "DPI",
+    "DPI",
+    suffix="x"
+)
 
 stacked_plot_excel(
     "Score",
-    "Score",
+    "FundScore",
     "Performance Score",
     "Score (%)",
     is_percent=True,
     suffix="%"
 )
+
+
 
 
 
