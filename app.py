@@ -569,7 +569,7 @@ def stacked_plot(
     ax.set_ylabel(ylabel, fontsize=28)
 
     if is_percent:
-        ax.yaxis.set_major_formatter(PercentFormatter())
+        ax.yaxis.set_major_formatter(PercentFormatter(1))
 
     ax.legend(fontsize=28)
     plt.tight_layout()
@@ -709,6 +709,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
