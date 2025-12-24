@@ -554,7 +554,7 @@ def stacked_plot_excel(
     suffix=""
 ):
     fig, ax = plt.subplots(figsize=(35, 16))
-    x = df_funds_raw["Name"]
+    x = df_funds_raw["NAME"]
 
     # 👉 USAR df_funds_display
     layers = build_layers_from_csv(df_funds_raw, metric)
@@ -590,7 +590,7 @@ def stacked_plot_excel(
         zorder=20
     )
 
-    for xi, yi in zip(x, df_funds_display[real_col]):
+    for xi, yi in zip(x, df_funds_raw[real_col]):
         if not np.isnan(yi):
             ax.text(
                 xi,
@@ -628,6 +628,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
