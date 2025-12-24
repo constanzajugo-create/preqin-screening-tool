@@ -137,33 +137,37 @@ def build_layers_from_csv(df, metric):
 
 def build_layers_excel_style(df, metric):
     """
-    Replica EXACTA del gráfico Excel:
-    - Sin base
-    - Parte desde MIN
-    - Q4 abajo → Q1 arriba
+    - Parte desde MIN (puede ser negativo)
+    - Cada bloque llega al siguiente cuartil
+    - Funciona con IRR negativos
     """
 
     if metric == "Score":
-        qmin, q1, q2, q3, q4 = (
-            "Score_Min", "Score_Q1", "Score_Q2", "Score_Q3", "Score_Max"
-        )
+        levels = [
+            df["Score_Min"],
+            df["Score_Max"],  # Q4
+            df["Score_Q3"],
+            df["Score_Q2"],
+            df["Score_Q1"],
+        ]
     else:
-        qmin, q1, q2, q3, q4 = (
-            f"{metric}_min",
-            f"{metric}_p25",
-            f"{metric}_p50",
-            f"{metric}_p75",
-            f"{metric}_p95",
-        )
+        levels = [
+            df[f"{metric}_min"],
+            df[f"{metric}_p95"],  # Q4
+            df[f"{metric}_p75"],  # Q3
+            df[f"{metric}_p50"],  # Q2
+            df[f"{metric}_p25"],  # Q1
+        ]
 
     layers = pd.DataFrame(index=df.index)
 
-    layers["Q4"] = df[q4] - df[qmin]
-    layers["Q3"] = df[q3] - df[q4]
-    layers["Q2"] = df[q2] - df[q3]
-    layers["Q1"] = df[q1] - df[q2]
+    layers["Q4"] = levels[1] - levels[0]
+    layers["Q3"] = levels[2] - levels[1]
+    layers["Q2"] = levels[3] - levels[2]
+    layers["Q1"] = levels[4] - levels[3]
 
     return layers.fillna(0)
+
 
 
 # --------------------------------------------------------
@@ -717,6 +721,7 @@ stacked_plot_excel(
     "Performance Score",
     "Score (%)"
 )
+
 
 
 
