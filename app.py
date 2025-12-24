@@ -618,26 +618,44 @@ def stacked_plot_excel(
         x,
         df_funds_raw[real_col],
         color="red",
-        s=220,
+        s=700,
         edgecolor="white",
-        linewidth=2,
+        linewidth=3,
         zorder=20
     )
 
     for xi, yi in zip(x, df_funds_raw[real_col]):
-        if not np.isnan(yi):
-            ax.text(
-                xi,
-                yi + 0.01,
-                f"{yi*100:.2f}%",
-                color="red",
-                fontsize=20,
-                ha="center"
-            )
+        if np.isnan(yi):
+            continue
+    
+        if metric in ["IRR", "Score"]:
+            label = f"{yi*100:.2f}%"
+            offset = 0.02
+        else:
+            label = f"{yi:.2f}x"
+            offset = 0.05
+    
+        ax.text(
+            xi,
+            yi + offset,
+            label,
+            color="red",
+            fontsize=32,
+            fontweight="bold",
+            ha="center",
+            va="bottom"
+        )
 
-    ax.set_title(title, fontsize=35)
-    ax.set_ylabel(ylabel, fontsize=28)
-    ax.set_xlabel("Fund Name", fontsize=28)
+    ax.set_title(title, fontsize=35, fontweight="bold")
+    ax.set_ylabel(ylabel, fontsize=32)
+    ax.set_xlabel("Fund Name", fontsize=32)
+    ax.set_xticklabels(
+        x,
+        rotation=30,
+        ha="center",
+        fontsize=22
+    )
+
 
     # -------------------------------
     # FORMATO DE EJE Y (UNIDADES)
@@ -649,8 +667,8 @@ def stacked_plot_excel(
             plt.FuncFormatter(lambda y, _: f"{y:.1f}x")
         )
 
-
     ax.legend(fontsize=24)
+    ax.tick_params(axis="y", labelsize=26)
     plt.tight_layout()
     st.pyplot(fig)
 
@@ -691,6 +709,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
