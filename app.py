@@ -328,6 +328,10 @@ st.subheader(f"Fondos del GP: {selected_gp}")
 df_funds = df_funds_all[df_funds_all["FUND MANAGER"] == selected_gp].copy()
 df_funds = df_funds.sort_values("VINTAGE / INCEPTION YEAR")
 
+#Dataframe CRUDO para gráficos (NO renombrar columnas)
+df_funds_raw = df_funds.copy().reset_index(drop=True)
+
+
 desired_cols = [
     "NAME","VINTAGE / INCEPTION YEAR","FUND SIZE (USD MN)",
 
@@ -550,10 +554,10 @@ def stacked_plot_excel(
     suffix=""
 ):
     fig, ax = plt.subplots(figsize=(35, 16))
-    x = df_funds_display["Fund Name"]
+    x = df_funds_raw["Name"]
 
     # 👉 USAR df_funds_display
-    layers = build_layers_from_csv(df_funds_display, metric)
+    layers = build_layers_from_csv(df_funds_raw, metric)
     bottom = np.zeros(len(layers))
 
     order = ["base", "Q1", "Q2", "Q3", "Q4"]
@@ -578,7 +582,7 @@ def stacked_plot_excel(
     # Punto rojo (FundScore crudo 0–1)
     ax.scatter(
         x,
-        df_funds_display[real_col],
+        df_funds_raw[real_col],
         color="red",
         s=220,
         edgecolor="white",
