@@ -135,6 +135,36 @@ def build_layers_from_csv(df, metric):
 
     return layers.fillna(0)
 
+def build_layers_excel_style(df, metric):
+    """
+    Replica EXACTA del gráfico Excel:
+    - Sin base
+    - Parte desde MIN
+    - Q4 abajo → Q1 arriba
+    """
+
+    if metric == "Score":
+        qmin, q1, q2, q3, q4 = (
+            "Score_Min", "Score_Q1", "Score_Q2", "Score_Q3", "Score_Max"
+        )
+    else:
+        qmin, q1, q2, q3, q4 = (
+            f"{metric}_min",
+            f"{metric}_p25",
+            f"{metric}_p50",
+            f"{metric}_p75",
+            f"{metric}_p95",
+        )
+
+    layers = pd.DataFrame(index=df.index)
+
+    layers["Q4"] = df[q4] - df[qmin]
+    layers["Q3"] = df[q3] - df[q4]
+    layers["Q2"] = df[q2] - df[q3]
+    layers["Q1"] = df[q1] - df[q2]
+
+    return layers.fillna(0)
+
 
 # --------------------------------------------------------
 # SIDEBAR FILTERS
@@ -557,16 +587,15 @@ def stacked_plot_excel(
     x = df_funds_raw["NAME"]
 
     # 👉 USAR df_funds_display
-    layers = build_layers_from_csv(df_funds_raw, metric)
+    layers = build_layers_excel_Style(df_funds_raw, metric)
     bottom = np.zeros(len(layers))
 
-    order = ["base", "Q1", "Q2", "Q3", "Q4"]
+    order = ["Q4", "Q3", "Q2", "Q1"]
     colors = {
-        "base": "#0b2c4d",
-        "Q1": COLORS["Q1"],
-        "Q2": COLORS["Q2"],
-        "Q3": COLORS["Q3"],
-        "Q4": COLORS["Q4"],
+        "Q4": "#1f4e79",  # azul oscuro
+        "Q3": "#5b9bd5",  # azul
+        "Q2": "#d9d9d9",  # gris
+        "Q1": "#ffc000",  # amarillo
     }
 
     for k in order:
@@ -649,29 +678,5 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
