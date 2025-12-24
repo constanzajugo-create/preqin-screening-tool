@@ -588,7 +588,12 @@ def stacked_plot_excel(
 
     # 👉 USAR df_funds_display
     layers = build_layers_excel_style(df_funds_raw, metric)
-    bottom = np.zeros(len(layers))
+    # 👉 partir desde el MIN (como Excel)
+    if metric == "Score":
+        bottom = df_funds_raw["Score_Min"].values
+    else:
+        bottom = df_funds_raw[f"{metric}_min"].values
+
 
     order = ["Q4", "Q3", "Q2", "Q1"]
     colors = {
@@ -678,6 +683,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
