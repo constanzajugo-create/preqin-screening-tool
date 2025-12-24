@@ -611,14 +611,14 @@ stacked_plot_excel("IRR", "IRR (%)", "IRR", "IRR (%)", is_percent=True, suffix="
 stacked_plot_excel("DPI", "DPI", "DPI", "DPI", suffix="x")
 
 stacked_plot_excel(
-    base="Score",
-    real_col="Fund Score",
-    title="Performance Score",
-    ylabel="Score (%)",
+    "Score",
+    "Score",
+    "Performance Score",
+    "Score (%)",
     is_percent=True,
-    suffix="%",
-    custom_quantiles=SCORE_QUANTILE_MAP
+    suffix="%"
 )
+
 
 
 
