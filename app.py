@@ -694,8 +694,7 @@ stacked_plot_excel(
     "TVPI",
     "NET MULTIPLE (X)",
     "TVPI",
-    "TVPI",
-    suffix="x"
+    "TVPI"
 )
 
 stacked_plot_excel(
@@ -703,16 +702,14 @@ stacked_plot_excel(
     "NET IRR (%)",
     "IRR",
     "IRR (%)",
-    is_percent=True,
-    suffix="%"
+    is_percent=True
 )
 
 stacked_plot_excel(
     "DPI",
     "DPI (%)",
     "DPI",
-    "DPI",
-    suffix="x"
+    "DPI"
 )
 
 stacked_plot_excel(
@@ -720,9 +717,9 @@ stacked_plot_excel(
     "FundScore",
     "Performance Score",
     "Score (%)",
-    is_percent=True,
-    suffix="%"
+    is_percent=True
 )
+
 
 
 
