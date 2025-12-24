@@ -629,8 +629,8 @@ def stacked_plot_excel(
             continue
     
         if metric in ["IRR", "Score"]:
-            label = f"{yi*100:.2f}%"
-            offset = 0.02
+            label = f"{yi:.2f}%"
+            offset = 1.0
         else:
             label = f"{yi:.2f}x"
             offset = 0.05
@@ -661,7 +661,7 @@ def stacked_plot_excel(
     # FORMATO DE EJE Y (UNIDADES)
     # -------------------------------
     if metric in ["IRR", "Score"]:
-        ax.yaxis.set_major_formatter(PercentFormatter(1.0))
+        ax.yaxis.set_major_formatter(PercentFormatter(100))
     else:
         ax.yaxis.set_major_formatter(
             plt.FuncFormatter(lambda y, _: f"{y:.1f}x")
@@ -709,6 +709,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
