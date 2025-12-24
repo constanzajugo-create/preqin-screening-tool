@@ -587,7 +587,7 @@ def stacked_plot_excel(
     x = df_funds_raw["NAME"]
 
     # 👉 USAR df_funds_display
-    layers = build_layers_excel_Style(df_funds_raw, metric)
+    layers = build_layers_excel_style(df_funds_raw, metric)
     bottom = np.zeros(len(layers))
 
     order = ["Q4", "Q3", "Q2", "Q1"]
@@ -678,5 +678,6 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
