@@ -545,7 +545,7 @@ def stacked_plot_excel(
     fig, ax = plt.subplots(figsize=(35, 16))
     x = df_funds_display["Fund Name"]
 
-    layers = build_layers_from_csv(df_funds_display, metric)
+    layers = build_layers_from_csv(df_funds, metric)
     bottom = np.zeros(len(layers))
 
     order = ["base", "Q1", "Q2", "Q3", "Q4"]
@@ -619,6 +619,7 @@ stacked_plot_excel(
     suffix="%",
     custom_quantiles=SCORE_QUANTILE_MAP
 )
+
 
 
 
