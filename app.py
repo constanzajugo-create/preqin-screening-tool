@@ -552,12 +552,13 @@ def stacked_plot_excel(
     fig, ax = plt.subplots(figsize=(35, 16))
     x = df_funds_display["Fund Name"]
 
-    layers = build_layers_from_csv(df_funds, metric)
+    # 👉 USAR df_funds_display
+    layers = build_layers_from_csv(df_funds_display, metric)
     bottom = np.zeros(len(layers))
 
     order = ["base", "Q1", "Q2", "Q3", "Q4"]
     colors = {
-        "base": "#0b2c4d",  # base oscura
+        "base": "#0b2c4d",
         "Q1": COLORS["Q1"],
         "Q2": COLORS["Q2"],
         "Q3": COLORS["Q3"],
@@ -574,7 +575,7 @@ def stacked_plot_excel(
         )
         bottom += layers[k]
 
-    # Punto rojo (valor real)
+    # Punto rojo (FundScore crudo 0–1)
     ax.scatter(
         x,
         df_funds_display[real_col],
@@ -585,13 +586,12 @@ def stacked_plot_excel(
         zorder=20
     )
 
-    offset = 2 if is_percent else 0.15
     for xi, yi in zip(x, df_funds_display[real_col]):
         if not np.isnan(yi):
             ax.text(
                 xi,
-                yi + offset,
-                f"{yi:.2f}{suffix}",
+                yi + 0.01,
+                f"{yi*100:.2f}%",
                 color="red",
                 fontsize=20,
                 ha="center"
@@ -602,11 +602,13 @@ def stacked_plot_excel(
     ax.set_xlabel("Fund Name", fontsize=28)
 
     if is_percent:
-        ax.yaxis.set_major_formatter(PercentFormatter())
+        ax.yaxis.set_major_formatter(PercentFormatter(1.0))
 
     ax.legend(fontsize=24)
     plt.tight_layout()
     st.pyplot(fig)
+)
+
 
 
 # --------------------------------------------------------
@@ -625,6 +627,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
