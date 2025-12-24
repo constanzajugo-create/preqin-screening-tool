@@ -579,28 +579,27 @@ def stacked_plot_excel(
     metric,
     real_col,
     title,
-    ylabel,
-    is_percent=False,
-    suffix=""
+    ylabel
 ):
     fig, ax = plt.subplots(figsize=(35, 16))
     x = df_funds_raw["NAME"]
 
-    # 👉 USAR df_funds_display
+    # -------------------------------
+    # CAPAS (desde MIN, estilo Excel)
+    # -------------------------------
     layers = build_layers_excel_style(df_funds_raw, metric)
-    # 👉 partir desde el MIN (como Excel)
+
     if metric == "Score":
         bottom = df_funds_raw["Score_Min"].values
     else:
         bottom = df_funds_raw[f"{metric}_min"].values
 
-
     order = ["Q4", "Q3", "Q2", "Q1"]
     colors = {
         "Q4": "#1f4e79",  # azul oscuro
-        "Q3": "#5b9bd5",  # azul
-        "Q2": "#d9d9d9",  # gris
-        "Q1": "#ffc000",  # amarillo
+        "Q3": "#5b9bd5",
+        "Q2": "#d9d9d9",
+        "Q1": "#ffc000",
     }
 
     for k in order:
@@ -613,7 +612,9 @@ def stacked_plot_excel(
         )
         bottom += layers[k]
 
-    # Punto rojo (FundScore crudo 0–1)
+    # -------------------------------
+    # PUNTO ROJO
+    # -------------------------------
     ax.scatter(
         x,
         df_funds_raw[real_col],
@@ -627,14 +628,19 @@ def stacked_plot_excel(
     for xi, yi in zip(x, df_funds_raw[real_col]):
         if np.isnan(yi):
             continue
-    
-        if metric in ["IRR", "Score"]:
+
+        if metric == "Score":
+            label = f"{yi*100:.2f}%"
+            offset = 0.02
+
+        elif metric == "IRR":
             label = f"{yi:.2f}%"
             offset = 1.0
-        else:
+
+        else:  # TVPI / DPI
             label = f"{yi:.2f}x"
             offset = 0.05
-    
+
         ax.text(
             xi,
             yi + offset,
@@ -646,9 +652,13 @@ def stacked_plot_excel(
             va="bottom"
         )
 
+    # -------------------------------
+    # FORMATO EJES
+    # -------------------------------
     ax.set_title(title, fontsize=35, fontweight="bold")
     ax.set_ylabel(ylabel, fontsize=32)
     ax.set_xlabel("Fund Name", fontsize=32)
+
     ax.set_xticklabels(
         x,
         rotation=30,
@@ -656,21 +666,25 @@ def stacked_plot_excel(
         fontsize=22
     )
 
-
-    # -------------------------------
-    # FORMATO DE EJE Y (UNIDADES)
-    # -------------------------------
-    if metric in ["IRR", "Score"]:
+    # 🔑 FORMATO Y SEGÚN MÉTRICA
+    if metric == "Score":
         ax.yaxis.set_major_formatter(PercentFormatter(1))
-    else:
+
+    elif metric == "IRR":
+        ax.yaxis.set_major_formatter(
+            plt.FuncFormatter(lambda y, _: f"{y:.0f}%")
+        )
+
+    else:  # TVPI / DPI
         ax.yaxis.set_major_formatter(
             plt.FuncFormatter(lambda y, _: f"{y:.1f}x")
         )
 
-    ax.legend(fontsize=24)
     ax.tick_params(axis="y", labelsize=26)
+    ax.legend(fontsize=24)
     plt.tight_layout()
     st.pyplot(fig)
+
 
 # --------------------------------------------------------
 # LLAMADAS
@@ -709,6 +723,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
