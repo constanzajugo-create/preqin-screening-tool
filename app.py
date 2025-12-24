@@ -607,9 +607,6 @@ def stacked_plot_excel(
     ax.legend(fontsize=24)
     plt.tight_layout()
     st.pyplot(fig)
-)
-
-
 
 # --------------------------------------------------------
 # LLAMADAS
@@ -627,6 +624,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
