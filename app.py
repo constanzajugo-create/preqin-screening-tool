@@ -639,8 +639,16 @@ def stacked_plot_excel(
     ax.set_ylabel(ylabel, fontsize=28)
     ax.set_xlabel("Fund Name", fontsize=28)
 
-    if is_percent:
+    # -------------------------------
+    # FORMATO DE EJE Y (UNIDADES)
+    # -------------------------------
+    if metric in ["IRR", "Score"]:
         ax.yaxis.set_major_formatter(PercentFormatter(1.0))
+    else:
+        ax.yaxis.set_major_formatter(
+            plt.FuncFormatter(lambda y, _: f"{y:.1f}x")
+        )
+
 
     ax.legend(fontsize=24)
     plt.tight_layout()
@@ -683,6 +691,7 @@ stacked_plot_excel(
     is_percent=True,
     suffix="%"
 )
+
 
 
 
