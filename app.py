@@ -172,15 +172,27 @@ def build_layers_excel_style(df, metric):
 # --------------------------------------------------------
 st.sidebar.header("Filtros")
 
+fondos_scope = st.sidebar.radio(
+    "Fondos",
+    ["Todos", "Nuestros Fondos"],
+    index=0
+)
+
+# Aplicar filtro raíz
+if fondos_scope == "Nuestros Fondos":
+    df_base = df[df["Nuestros Fondos"] == "Sí"].copy()
+else:
+    df_base = df.copy()
+
 selected_asset = st.sidebar.selectbox(
     "Asset Class",
     ["Todos", "Private Debt", "Private Equity", "Infrastructure", "Real Estate"]
 )
 
 if selected_asset != "Todos":
-    df_asset = df[df["ASSET CLASS"] == selected_asset].copy()
+    df_asset = df_base[df_base["ASSET CLASS"] == selected_asset].copy()
 else:
-    df_asset = df.copy()
+    df_asset = df_base.copy()
 
 regions = sorted(
     df_asset["PRIMARY REGION FOCUS"]
@@ -718,6 +730,7 @@ stacked_plot_excel(
     "Performance Score",
     "Score (%)"
 )
+
 
 
 
